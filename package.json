@@ -1,0 +1,25 @@
+{
+  "name": "js13k-2026-rino",
+  "version": "0.0.1",
+  "description": "Rino — Finding Love",
+  "main": "index.html",
+  "author": "Aurélio Heckert",
+  "license": "AGPL-3.0-or-later",
+  "scripts": {
+    "asbuild:debug": "asc src/assembly/index.ts --target debug -Osize",
+    "asbuild:release": "asc src/assembly/index.ts --target release -Osize --bindings esm",
+    "asbuild": "yarn asbuild:debug && yarn asbuild:release",
+    "test": "node --test",
+    "build": "yarn test && ./build.sh",
+    "build:watch": "yarn build; while inotifywait -r -e create -e modify -e move -e delete .; do echo; yarn build; echo; done",
+    "serve": "PORT=3333 npx serve ./dist"
+  },
+  "devDependencies": {
+    "assemblyscript": "^0.28.20"
+  },
+  "type": "module",
+  "dependencies": {
+    "minify": "^15.3.1",
+    "terser": "^5.50.0"
+  }
+}

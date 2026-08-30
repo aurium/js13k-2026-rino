@@ -1,0 +1,53 @@
+html {
+  overflow: hidden;
+  background: #222;
+  color: #EEE;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  position: relative;
+  width: 80vw;
+  height: 40vw;
+  * {
+    position: absolute;
+  }
+}
+
+#book {
+  width: 80vw;
+  filter: drop-shadow(0 0 1vw #000) drop-shadow(1vw 1vw 2vw #000);
+}
+
+canvas {
+  right: 0;
+  top: 0;
+  width: 80vw;
+  height: 40vw;
+  image-rendering: pixelated;
+  &.page {
+    width: 40vw;
+  }
+}
+
+#dbg {
+  background: #0007;
+  padding: .5em 1em;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+}
+
+#qlt {
+  position: absolute;
+  right: 0;
+  bottom: -3em;
+}
