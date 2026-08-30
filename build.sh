@@ -15,13 +15,14 @@ sed -r "s/\blog\(/$LOG_FN(/g" $SCRIPTS |
 terser --compress \
        --mangle toplevel \
        --output ../dist/app.js \
-       --source-map includeSources,url=app.js.map \
+       --source-map includeSources,url=app.js.map
 
 sed -r "s/\blog\(/$LOG_FN(/g" $WORKER_SCRIPTS |
 terser --compress \
        --mangle toplevel \
        --output ../dist/worker.js \
-       --source-map includeSources,url=worker.js.map \
+       --source-map includeSources,url=worker.js.map
+sed -ri 's/export [^;]+//g' ../dist/worker.js
 
 cat index.html |
 while read line; do

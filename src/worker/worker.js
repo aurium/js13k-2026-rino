@@ -1,5 +1,31 @@
 postMessage(['A']);
 
+/*
+  rino type is:
+  {
+    K: Klass ('B' = Bio Being)
+    x: Horizontal center position (lower=left bigger=rigth)
+    y: Vertical center position (lower=up bigger=down)
+    z: Z level (like CSS z-index)
+    w: Walking (1=trueish 0=falseish)
+    j: Jumping (stages: 1, 2, 3, and 4) (0 = not jumping)
+    r: Flip X (1=to the rigth -1=to the left)
+  }
+*/
+
+/*
+  elements is an array of:
+  {
+    K: Klass ('T' = Terrain, 'O' = Object)
+    L: Left (lower horizontal position)
+    R: Right (bigger horizontal position)
+    T: Top (lower vertical position)
+    B: Bottom (bigger vertical position)
+    z: Z level (like CSS z-index)
+  }
+  the rino itself and other `{k:'B'}` are in te elements array too.
+*/
+
 let rino,
   rinoJumpTimeout,
   rinoVY,
@@ -57,7 +83,7 @@ function chapterInit(c) {
 let lastTime = performance.now();
 let tic = 0;
 
-setInterval(() => {
+function loopInteration() {
   tic++;
   /* * * BEGIN FPS * * * * * * * * * * * * * * * * * */
   if (tic%200 == 0) {
@@ -67,6 +93,7 @@ setInterval(() => {
     lastTime = now;
   }
   /* * * END FPS * * * * * * * * * * * * * * * * * * */
+
   if (rino.w) {
     rino.x += .07 * rino.r;
   }
@@ -76,6 +103,23 @@ setInterval(() => {
   else if (rino.j) {
     rinoVY += .01;
   }
+
+  /* * * BEGIN Update Positions * * */
   rino.y += rinoVY;
+  /* * * END Update Positions * * * */
+
+  /* * * BEGIN colision test and update status and positions * * */
+  let rinoPawBackX = rino.x - 5 * rino.r
+  let rinoPawBackY = rino.y + 3
+  let rinoPawFrontX = rino.x + 3 * rino.r
+  let rinoPawFrontY = rino.y + 3
+  // TODO colision test
+  /* * * END colision test * * * * * * * * * * * * * * * * * * * */
+
+  // Update elements state to the main thread, allowing canvas update:
   postMessage(['E', elements]);
-},16);
+}
+
+setInterval(loopInteration ,16);
+
+export const __loopInteration = loopInteration
