@@ -1,4 +1,3 @@
-
 function initGame() {
 
   nextChapter();
@@ -13,10 +12,21 @@ function initGame() {
       const fps = 20_000 / (now - lastTime)
       dbg.textContent = `FPS: ${fps.toFixed(1)} - `
                       + `Zoom: ${zoom} - `
-                      + `Size: ${chapterCanvas.width}x${chapterCanvas.height}`;
+                      + `Size: ${chapterCanvas.width}x${chapterCanvas.height} - `
+                      + `rino.x: ${rino.x.toFixed(2)} - camera: {x:${camera.x.toFixed(2)}}`;
       lastTime = now;
       if (fps < 40) setZoom(zoom + 1)
     }
+
+    /* * * BEGIN Update Camara * * * * * * * * * * * * * */
+    let targetX = rino.x + 10*rino.r;
+    // Camera dist X to Target = abs(camera.x - targetX)
+    let multCamDistX = sqrt(abs(camera.x - targetX))*10;
+    camera.x = (camera.x*multCamDistX + targetX) / (multCamDistX+1);
+    let targetY = rino.y - 5;
+    let multCamDistY = sqrt(abs(camera.y - targetY))*5;
+    camera.y = (camera.y*multCamDistY + targetY) / (multCamDistY+1);
+    /* * * END Update Camara * * * * * * * * * * * * * * */
 
     ctx.fillStyle = '#EEE';
     ctx.fillRect(0, 0, chapterCanvas.width, chapterCanvas.height);

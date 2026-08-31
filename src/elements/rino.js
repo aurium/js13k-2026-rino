@@ -14,15 +14,12 @@ const ClassRino = (x,y,z,S=[])=> ({
   /** Draw */
   d() {
     const {x, y, r, a, w} = this
-    // let rotateX = ()=> x*Math.cos(a) - y*Math.sin(a);
-    // let rotateY = ()=> x*Math.sin(a) + y*Math.cos(a);
     let flipX = n => x + n*r;
-    // let placeY = n => y + rotateY(n);
     let placeY = n => y + n
     let rotatePoint = (px, py)=> {
       px *= r;
-      let rx = px*Math.cos(a) - py*Math.sin(a);
-      let ry = px*Math.sin(a) + py*Math.cos(a);
+      let rx = px*cos(a) - py*sin(a);
+      let ry = px*sin(a) + py*cos(a);
       return [ x + rx, y + ry ];
     }
 
@@ -38,7 +35,7 @@ const ClassRino = (x,y,z,S=[])=> ({
         ]
       } else {
         t = (1-t)*2;
-        let incY = Math.sin(Math.PI*t);
+        let incY = sin(PI*t);
         return [
           ...rotatePoint(place+.5-t**4,  1-incY/2),
           ...rotatePoint(place+1-t*2,    3-incY),
@@ -48,7 +45,7 @@ const ClassRino = (x,y,z,S=[])=> ({
       }
     }
 
-    let t = Math.sin( Math.PI * (Date.now() % 500 / 500) )/3;
+    let t = sin( PI * (Date.now() % 500 / 500) )/3;
     if (!w) t=0;
 
     style('000', .2, '888');

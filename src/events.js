@@ -27,8 +27,9 @@ worker.onmessage = ({data: [event, payload]})=> {
     setTimeout(cover.onclick, 1); // AUTO START for DEV MODE!
   }
   if (event=='E') { // Update Elements
-    payload.forEach((el, i)=>
-      elements[i] = { ...el, d:elements[i].d }
-    )
+    payload.forEach((el, i)=> {
+      elements[i] = { ...el, d:elements[i].d };
+      if (el.P) rino = elements[i];
+    })
   }
 }

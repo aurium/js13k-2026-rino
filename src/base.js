@@ -3,6 +3,8 @@
 
 const log = console.log;
 
+let { PI, abs, sqrt, cos, sin } = Math;
+
 let
   curChapter = 0,
   chapters = [],
@@ -14,7 +16,7 @@ let
   unt = 1,
   drawingPlanZ = 1,
   camera = {x:0, y:0},
-  oneTurn = 2 * Math.PI,
+  oneTurn = 2 * PI,
   inputDisabled = 1,
   rino = {},
   worker = new Worker('worker.js');
@@ -46,6 +48,12 @@ function writeTitle(ctx) {
   ctx.fillText(`Chapter ${curChapter}`, unt*2, unt*5);
   ctx.font = `bold ${4*unt}px cursive`;
   ctx.fillText(chapters[curChapter].t, unt*2, unt*9);
+}
+
+function mkPlayer(...a) {
+  rino = ClassRino(...a);
+  rino.P = 1; // is player
+  return rino;
 }
 
 const untZ = (n)=> n * unt/(.75+drawingPlanZ/4)
@@ -80,7 +88,7 @@ function getCtx(canvas) {
 
 function style(strokeStyle='000', lineWidth=.2, fillStyle='AAA') {
   ctx.strokeStyle = '#'+strokeStyle;
-  ctx.lineWidth = lineWidth * unt * Math.sqrt(.75+drawingPlanZ/4);
+  ctx.lineWidth = lineWidth * unt * sqrt(.75+drawingPlanZ/4);
   ctx.fillStyle = '#'+fillStyle;
   ctx.lineJoin = 'round';
 }

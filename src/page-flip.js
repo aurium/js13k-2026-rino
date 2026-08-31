@@ -4,7 +4,6 @@ const nextChapter = ()=> {
   log(`Starting Chapeter ${curChapter}:`, chapters[curChapter].t);
   chapters[curChapter].s();
   elements = chapters[curChapter].e;
-  rino.P = 1; // is player
   worker.postMessage(['NC', {
     c: curChapter,
     e: elements.map(el => ({ ...el, d:0 }))
