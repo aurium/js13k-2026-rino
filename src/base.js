@@ -3,10 +3,11 @@
 
 const log = console.log;
 
-let { PI, abs, sqrt, cos, sin } = Math;
+let { PI:halfTurn, abs, sqrt, cos, sin } = Math;
 
 let
-  curChapter = 0,
+  curChapterNum,
+  curChapter,
   chapters = [],
   elements,
   chapterCanvas = cover,
@@ -16,9 +17,11 @@ let
   unt = 1,
   drawingPlanZ = 1,
   camera = {x:0, y:0},
-  oneTurn = 2 * PI,
+  oneTurn = 2 * halfTurn,
+  limJumpAngle = halfTurn/4,
   inputDisabled = 1,
   rino = {},
+  rinoLife = 0,
   worker = new Worker('worker.js');
 
 function disableInput(v=1) {
@@ -44,10 +47,15 @@ window.onresize = ()=> {
 function writeTitle(ctx) {
   ctx.fillStyle = '#000';
   ctx.textAlign = 'left';
-  ctx.font = `bold ${5*unt}px cursive`;
-  ctx.fillText(`Chapter ${curChapter}`, unt*2, unt*5);
-  ctx.font = `bold ${4*unt}px cursive`;
-  ctx.fillText(chapters[curChapter].t, unt*2, unt*9);
+  let titleSize = 4
+  if (curChapterNum!=99) {
+    ctx.font = `bold ${5*unt}px cursive`;
+    ctx.fillText(`Chapter ${curChapterNum}`, unt*2, unt*5);
+  } else {
+    titleSize = 8
+  }
+  ctx.font = `bold ${titleSize*unt}px cursive`;
+  ctx.fillText(curChapter.t, unt*2, unt*9);
 }
 
 function mkPlayer(...a) {

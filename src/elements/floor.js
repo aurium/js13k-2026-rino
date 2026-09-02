@@ -13,7 +13,7 @@ const ClassFloor = (L,R,T,B,z=1,k='G')=> ({
   /** Draw */
   d() {
     let t = Date.now() % 3000 / 3000;
-    let v = sin(t*PI*2); // Wind
+    let v = sin(t*halfTurn*2); // Wind
     const {L,R,T,B,z,k} = this
     style();
     const gradient = ctx.crLGt(0, T-camera.y, 0, B-camera.y);

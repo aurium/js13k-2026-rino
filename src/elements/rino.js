@@ -13,14 +13,28 @@ const ClassRino = (x,y,z,S=[])=> ({
   a: 0,
   /** Draw */
   d() {
-    const {x, y, r, a, w} = this
-    let flipX = n => x + n*r;
-    let placeY = n => y + n
+    let {x, y, r, j, a, w} = this
+
+    if (curChapterNum < 99) {
+      if (j==1 && abs(a)<limJumpAngle) a -= r*.03;
+      if (j==4 && abs(a)<limJumpAngle) a += r*.02;
+      if (j==0||j==3) a *= this.pfl ? .6 : .9; // "pfl" means "Paw Front Landed"
+      this.a = a;
+    }
+
     let rotatePoint = (px, py)=> {
       px *= r;
       let rx = px*cos(a) - py*sin(a);
       let ry = px*sin(a) + py*cos(a);
       return [ x + rx, y + ry ];
+    }
+    let mvPoint = (px, py, inc=0)=> {
+      let px2 = (px-2) * r;
+      px *= r;
+      let ry2 = px2*sin(a) + py*cos(a);
+      let ry = px*sin(a) + py*cos(a);
+      if (inc) ry = (ry+ry2*inc)/(inc+1);
+      return [ x + px, y + ry ];
     }
 
     let paw = (place, offset)=> {
@@ -28,24 +42,24 @@ const ClassRino = (x,y,z,S=[])=> ({
       if (!w) t=.25;
       if (t<.5) {
         return [
-          ...rotatePoint(place+.5-t*2,  1),
-          ...rotatePoint(place+1-t*4,   3),
-          ...rotatePoint(place+3-t*4,   3),
-          ...rotatePoint(place+2.5-t*2, 1)
+          ...mvPoint(place+.5-t*2,  1),
+          ...mvPoint(place+1-t*4,   3),
+          ...mvPoint(place+3-t*4,   3, 2),
+          ...mvPoint(place+2.5-t*2, 1, 1)
         ]
       } else {
         t = (1-t)*2;
-        let incY = sin(PI*t);
+        let incY = sin(halfTurn*t);
         return [
-          ...rotatePoint(place+.5-t**4,  1-incY/2),
-          ...rotatePoint(place+1-t*2,    3-incY),
-          ...rotatePoint(place+3-t*2,    3-incY),
-          ...rotatePoint(place+2.5-t**4, 1-incY/2)
+          ...mvPoint(place+.5-t**4,  1-incY/2),
+          ...mvPoint(place+1-t*2,    3-incY),
+          ...mvPoint(place+3-t*2,    3-incY, 2),
+          ...mvPoint(place+2.5-t**4, 1-incY/2, 1)
         ]
       }
     }
 
-    let t = sin( PI * (Date.now() % 500 / 500) )/3;
+    let t = sin( halfTurn * (Date.now() % 500 / 500) )/3;
     if (!w) t=0;
 
     style('000', .2, '888');

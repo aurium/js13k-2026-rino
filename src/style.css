@@ -6,6 +6,7 @@ html {
   justify-content: center;
   align-items: center;
   height: 100vh;
+  font-size: 1vw;
 }
 
 * {
@@ -24,6 +25,7 @@ body {
 
 #book {
   width: 80vw;
+  height: 40vw;
   filter: drop-shadow(0 0 1vw #000) drop-shadow(1vw 1vw 2vw #000);
 }
 
@@ -33,8 +35,24 @@ canvas {
   width: 80vw;
   height: 40vw;
   image-rendering: pixelated;
+  will-change: filter;
+  &.cha {
+    filter: brightness(0.1);
+    transition: 1.5s ease-in filter;
+  }
   &.page {
-    width: 40vw;
+    width: calc(40vw + 1px);
+    will-change: transform, width;
+  }
+}
+
+#life {
+  right: 1em;
+  bottom: .5em;
+  color: #C00;
+  b {
+    position: static;
+    color: #0004;
   }
 }
 

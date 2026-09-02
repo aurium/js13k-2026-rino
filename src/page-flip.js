@@ -1,16 +1,19 @@
 const nextChapter = ()=> {
   disableInput(1);
-  curChapter++;
-  log(`Starting Chapeter ${curChapter}:`, chapters[curChapter].t);
-  chapters[curChapter].s();
-  elements = chapters[curChapter].e;
+  curChapter = chapters[curChapterNum];
+  log(`Starting Chapeter ${curChapterNum}:`, curChapter.t);
+  curChapter.s();
+  elements = curChapter.e;
   worker.postMessage(['NC', {
-    c: curChapter,
+    c: curChapterNum,
     e: elements.map(el => ({ ...el, d:0 }))
   }]); // Notify new Chapter
 
+  camera = { x: rino.x, y: rino.y };
+
   oldChapterCanvas = chapterCanvas;
   chapterCanvas = document.createElement('canvas');
+  chapterCanvas.className = 'cha'; // Chapter
   chapterCanvas.r = ()=>void(0); // Do not need a ReDraw
   book.prepend(chapterCanvas);
   onresize();
@@ -38,10 +41,12 @@ const nextChapter = ()=> {
   oldCtx.clearRect(page.width, 0, page.width, page.height);
 
   // Apply the first half of the animation:
-  page.style.transition = '1.5s ease-in';
-  requestAnimationFrame(()=>
-    page.style.transform = 'translate(-50%, -22.3%) scaleX(0) skewY(-25deg)'
-  );
+  page.style.transition = '1.5s ease-in transform';
+  requestAnimationFrame(()=> {
+    chapterCanvas.style.filter = 'brightness(1)';
+    page.style.transform = 'translate(-50%, -22.3%) scaleX(0) skewY(-25deg)';
+    page.style.width = '40vw'
+  });
   // Define the second half of the animation:
   setTimeout(()=> {
     pctx.translate(page.width, 0);
@@ -51,9 +56,9 @@ const nextChapter = ()=> {
       0, 0, page.width, page.height);
     // Apply the second half of the animation:
     page.style.transition = '1s ease-out';
-    requestAnimationFrame(()=>
-      page.style.transform = 'translate(-100%, 0%) scaleX(-1) skewY(0deg)'
-    );
+    requestAnimationFrame(()=> {
+      page.style.transform = 'translate(-100%, 0%) scaleX(-1) skewY(0deg)';
+    });
   }, 1500);
   // Remove fliping page:
   setTimeout(()=> {

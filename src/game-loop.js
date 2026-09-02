@@ -1,9 +1,10 @@
 function initGame() {
 
+  curChapterNum = 1;
   nextChapter();
 
-  let lastTime = performance.now();
-  let tic = 0;
+  let lastTime = performance.now(),
+      tic = 0;
 
   setInterval(() => {
     tic++;
@@ -18,12 +19,17 @@ function initGame() {
       if (fps < 40) setZoom(zoom + 1)
     }
 
+    if (rino.L != rinoLife) {
+      rinoLife = rino.L;
+      life.innerHTML = '♥'.repeat(rinoLife) + `<b>${'♥'.repeat(10-rinoLife)}</b>`;
+    }
+
     /* * * BEGIN Update Camara * * * * * * * * * * * * * */
-    let targetX = rino.x + 10*rino.r;
+    let targetX = rino.x + (rinoLife ? 10*rino.r : 0);
     // Camera dist X to Target = abs(camera.x - targetX)
     let multCamDistX = sqrt(abs(camera.x - targetX))*10;
     camera.x = (camera.x*multCamDistX + targetX) / (multCamDistX+1);
-    let targetY = rino.y - 5;
+    let targetY = rino.y - (rinoLife ? 5 : 0);
     let multCamDistY = sqrt(abs(camera.y - targetY))*5;
     camera.y = (camera.y*multCamDistY + targetY) / (multCamDistY+1);
     /* * * END Update Camara * * * * * * * * * * * * * * */
@@ -32,8 +38,6 @@ function initGame() {
     ctx.fillRect(0, 0, chapterCanvas.width, chapterCanvas.height);
 
     ctx.sae();
-    // camera.x+=.002;
-    // camera.y+=.001;
     ctx.tre(40, 20);
     for (let z=6; z>0; z--) {
       // INI drop distance fade
@@ -41,14 +45,16 @@ function initGame() {
       ctx.fillStyle = '#EEE'+(z==1 ? 7 : 3);
       ctx.fiRt(-40, -20, 80, 40);
       // END distance fade
+      curChapter.T1?.(z); // Chapter specific drawings, Before Z level.
       // INI draw elements for the current Z plan
       ctx.sae();
       ctx.scale(1/(.75+z/4), 1/(.75+z/4));
       drawingPlanZ = z;
-      for (const el of chapters[curChapter].e.filter(el=>el.z==z)) {
+      for (const el of elements.filter(el=>el.z==z)) {
         el.d(tic)
       }
       ctx.ree();
+      curChapter.T2?.(z); // Chapter specific drawings, After Z level.
       // END draw elements for the current Z plan
     }
     ctx.ree();
