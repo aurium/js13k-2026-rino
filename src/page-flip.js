@@ -58,6 +58,7 @@ const nextChapter = ()=> {
     page.style.transition = '1s ease-out';
     requestAnimationFrame(()=> {
       page.style.transform = 'translate(-100%, 0%) scaleX(-1) skewY(0deg)';
+      oldChapterCanvas.style.filter = 'brightness(0)';
     });
   }, 1500);
   // Remove fliping page:

@@ -29,6 +29,7 @@ postMessage(['A']);
 let rino,
   rinoJumpTimeout,
   rinoVY,
+  rinoSpeed = 1,
   rinoPawBackLanded,
   rinoPawFrontLanded,
   elements,
@@ -136,8 +137,11 @@ function loopInteration() {
   if (tic%10==0 && rino.y > 30 && rinoLife > 0) rinoLife--;
 
   if (rino.w) {
-    rino.x += .07 * rino.r;
+    if (rinoSpeed < 2) rinoSpeed += .005;
+    rino.x += .07 * rino.r * rinoSpeed;
   }
+  else rinoSpeed = 1;
+
   if (rino.j==1) {
     rinoVY -= .02;
   }
@@ -178,6 +182,7 @@ function loopInteration() {
 
   // Update elements state to the main thread, allowing canvas update:
   rino.L = rinoLife;
+  rino.s = rinoSpeed;
   postMessage(['E', elements]);
   if (rinoLife == 0) postMessage(['NC', 99]);
 }

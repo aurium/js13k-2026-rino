@@ -1,10 +1,20 @@
-const ClassRino = (x,y,z,S=[])=> ({
+const ClassRino = (x,y,z,S=[])=> {
+/** Instance only data that is not shared with worker */
+const unsharedMemory = {
+  /** @member {number} ln - the last now(). */
+  ln: 0,
+  /** @member {number} t - the general animation step, the base index. */
+  t: 0
+};
+return {
   K: 'B', // Klass: Bio Being
   x,y,z,
   /** Style */
   S,
   /** Walking */
   w: 0,
+  /** Speed Multiplier */
+  s: 1,
   /** Jumping */
   j: 0,
   /** Flip X */
@@ -13,7 +23,7 @@ const ClassRino = (x,y,z,S=[])=> ({
   a: 0,
   /** Draw */
   d() {
-    let {x, y, r, j, a, w} = this
+    let {x, y, r, j, a, w, s} = this
 
     if (curChapterNum < 99) {
       if (j==1 && abs(a)<limJumpAngle) a -= r*.03;
@@ -37,8 +47,16 @@ const ClassRino = (x,y,z,S=[])=> ({
       return [ x + px, y + ry ];
     }
 
+    //// BEGIN Animation step base index //////////////////////////////////
+    const now = performance.now();
+    const dt = (now - unsharedMemory.ln) / 1000;
+    unsharedMemory.ln = now;
+    unsharedMemory.t = (unsharedMemory.t + dt * s) % 1;
+    //// END Animation step base index ////////////////////////////////////
+
     let paw = (place, offset)=> {
-      let t = (Date.now() + offset*1000) % 1000 / 1000;
+      let t = (unsharedMemory.t + offset) % 1;
+
       if (!w) t=.25;
       if (t<.5) {
         return [
@@ -59,7 +77,7 @@ const ClassRino = (x,y,z,S=[])=> ({
       }
     }
 
-    let t = sin( halfTurn * (Date.now() % 500 / 500) )/3;
+    let t = sin( (unsharedMemory.t % .5) * oneTurn )/3;
     if (!w) t=0;
 
     style('000', .2, '888');
@@ -116,4 +134,5 @@ const ClassRino = (x,y,z,S=[])=> ({
     ctx.fill(path);
     ctx.stroke(path);
   }
-})
+}
+}
