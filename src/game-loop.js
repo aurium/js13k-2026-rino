@@ -16,20 +16,20 @@ function initGame() {
                       + `Size: ${chapterCanvas.width}x${chapterCanvas.height} - `
                       + `rino.x: ${rino.x.toFixed(2)} - camera: {x:${camera.x.toFixed(2)}}`;
       lastTime = now;
-      if (fps < 40) setZoom(zoom + 1)
+      if (!flippingPage && fps < 40) setZoom(zoom + 1)
     }
 
-    if (rino.L != rinoLife) {
-      rinoLife = rino.L;
+    if (rino.l != rinoLife) {
+      rinoLife = rino.l;
       life.innerHTML = '♥'.repeat(rinoLife) + `<b>${'♥'.repeat(10-rinoLife)}</b>`;
     }
 
     /* * * BEGIN Update Camara * * * * * * * * * * * * * */
-    let targetX = rino.x + (rinoLife ? 10*rino.r : 0);
+    let targetX = rino.x + 10*rino.r;
     // Camera dist X to Target = abs(camera.x - targetX)
     let multCamDistX = sqrt(abs(camera.x - targetX))*10;
     camera.x = (camera.x*multCamDistX + targetX) / (multCamDistX+1);
-    let targetY = rino.y - (rinoLife ? 5 : 0);
+    let targetY = rino.y>0 ? rino.y/2 : rino.y-5;
     let multCamDistY = sqrt(abs(camera.y - targetY))*5;
     camera.y = (camera.y*multCamDistY + targetY) / (multCamDistY+1);
     /* * * END Update Camara * * * * * * * * * * * * * * */

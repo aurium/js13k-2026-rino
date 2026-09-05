@@ -8,7 +8,9 @@ const unsharedMemory = {
 };
 return {
   K: 'B', // Klass: Bio Being
-  x,y,z,
+  x, y, z,
+  vx: 0,
+  vy: 0,
   /** Style */
   S,
   /** Walking */
@@ -23,12 +25,12 @@ return {
   a: 0,
   /** Draw */
   d() {
-    let {x, y, r, j, a, w, s} = this
+    let {x, y, r, j, a, w, s, L,R,T,B} = this
 
     if (curChapterNum < 99) {
       if (j==1 && abs(a)<limJumpAngle) a -= r*.03;
       if (j==4 && abs(a)<limJumpAngle) a += r*.02;
-      if (j==0||j==3) a *= this.pfl ? .6 : .9; // "pfl" means "Paw Front Landed"
+      if (j==0||j==3) a *= this.f ? .6 : .9; // "f" means "Rino touches Floor".
       this.a = a;
     }
 
@@ -133,6 +135,8 @@ return {
     );
     ctx.fill(path);
     ctx.stroke(path);
+    style('0F08', .2, '00F4');
+    ctx.Q(L, T, R-L, B-T);
   }
 }
 }

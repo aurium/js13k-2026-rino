@@ -1,15 +1,18 @@
+let flippingPage = 0;
+
 const nextChapter = ()=> {
+  flippingPage = 1;
   disableInput(1);
   curChapter = chapters[curChapterNum];
   log(`Starting Chapeter ${curChapterNum}:`, curChapter.t);
+  camera = 0;
   curChapter.s();
+  camera = { x: rino.x+10, y: rino.y-5 };
   elements = curChapter.e;
   worker.postMessage(['NC', {
     c: curChapterNum,
     e: elements.map(el => ({ ...el, d:0 }))
   }]); // Notify new Chapter
-
-  camera = { x: rino.x, y: rino.y };
 
   oldChapterCanvas = chapterCanvas;
   chapterCanvas = document.createElement('canvas');
@@ -67,5 +70,6 @@ const nextChapter = ()=> {
     oldChapterCanvas.remove()
     page.remove()
     disableInput(0);
+    flippingPage = 0;
   }, 3000);
 }

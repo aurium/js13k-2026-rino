@@ -28,7 +28,6 @@ postMessage(['A']);
 
 let rino,
   rinoJumpTimeout,
-  rinoVY,
   rinoSpeed = 1,
   rinoPawBackLanded,
   rinoPawFrontLanded,
@@ -96,7 +95,7 @@ function rinoIsDropping() {
 }
 
 function chapterInit(c) {
-  rinoVY = 0;
+  rino.vy = 0;
   rinoPawBackLanded = 0;
   rinoPawFrontLanded = 0;
   if (c==1) { // First Chapter
@@ -105,18 +104,42 @@ function chapterInit(c) {
   }
 }
 
-/** Top (T) of the highest surface supporting a paw, or null when it has no ground under it. */
-function groundTopFor(pawX, pawY) {
+/** Each paw of a rino touches some floor or object with the same top value */
+function rinoIsGrounded(someRino) {
+  let pawBackX = someRino.x - 4 * someRino.r
+  let pawFrontX = someRino.x + 2 * someRino.r
+  let pawBackLanded = pawFrontLanded = 0;
   for (const el of elements) {
     if (el.z == rino.z) {
-      if ((el.K=='T' || el.K=='O') &&
-          pawX > el.L && pawX < el.R &&
-          pawY >= el.T && pawY <= el.B) {
-        return el.T;
-      }
+      pawBackLanded ||= (el.K=='F' || el.K=='O') &&
+        pawBackX > el.L && pawBackX < el.R &&
+        someRino.B >= el.T && someRino.B < el.T+.7;
+      pawFrontLanded ||= (el.K=='F' || el.K=='O') &&
+        pawFrontX > el.L && pawFrontX < el.R &&
+        someRino.B >= el.T && someRino.B < el.T+.7;
     }
   }
-  return null;
+  return pawBackLanded && pawFrontLanded;
+}
+
+function testColisionX(e1) {
+  for (const e2 of elements) {
+    if (
+      (e2.K=='W' || e2.K=='O') &&
+      e1.z == e2.z &&
+      e1.B > e2.T && e1.T < e2.B
+    ) {
+      if (e1.L < e2.R && e1.R > e2.L) return e2;
+    }
+  }
+}
+function testColisionFloor(o1, o2) {
+  for (const el of elements) {
+    if (o1.z == o2.z && (o2.K=='F' || o2.K=='O')) {
+      o1.R > o2.L && o1.L < el.R &&
+      o1.B >= o2.T && o1.B < o2.T+.7;
+    }
+  }
 }
 
 let lastTime = performance.now();
@@ -138,50 +161,62 @@ function loopInteration() {
 
   if (rino.w) {
     if (rinoSpeed < 2) rinoSpeed += .005;
-    rino.x += .07 * rino.r * rinoSpeed;
+    rino.vx = .07 * rino.r * rinoSpeed;
+    rino.x += rino.vx;
   }
   else rinoSpeed = 1;
 
   if (rino.j==1) {
-    rinoVY -= .02;
+    rino.vy -= .02;
   }
-  else if (rino.j) {
-    rinoVY += .015;
+  else if (rino.j && rino.vy<.5) {
+    rino.vy += .015;
   }
 
   /* * * BEGIN Update Positions * * */
-  rino.y += rinoVY;
+  rino.y += rino.vy;
+  rino.L = rino.x+rino.r-7;
+  rino.R = rino.x+rino.r+7;
+  rino.T = rino.y-3;
+  rino.B = rino.y+3;
   /* * * END Update Positions * * * */
 
   /* * * BEGIN colision test and update status and positions * * */
-  let rinoPawBackX = rino.x - 4 * rino.r
-  let rinoPawBackY = rino.y + 3
-  let rinoPawFrontX = rino.x + 2 * rino.r
-  let rinoPawFrontY = rino.y + 3
-  const groundBackY = groundTopFor(rinoPawBackX, rinoPawBackY);
-  const groundFrontY = groundTopFor(rinoPawFrontX, rinoPawFrontY);
+  /** @member {boolean} f - rino in foor = grounded */
+  rino.f = !!rinoIsGrounded(rino);
+
+  for (e1 of elements) if (e1.K=='B' || e1.K=='O') {
+    let e2 = testColisionX(e1);
+    if (e2) {
+      let v = e1.vx || -e2.vx || .1;
+      if (e2.K == 'W') e1.x += -v;
+      else { // e2.K == 'O'
+        e1.x += -v/2;
+        e2.x += v/2;
+      }
+    }
+    if (e1.K == 'O') {
+      e1.L = e1.x - e1.w/2;
+      e1.R = e1.x + e1.w/2;
+      e1.T = e1.y - e1.h/2;
+      e1.B = e1.y + e1.h/2;
+    }
+  }
   // pouso: somente caindo (vy>0; no ápice do salto vy é 0) e com as duas patas
   // sobre o topo de um elemento, o rino apoia sem atravessá-lo:
-  if (rinoVY > 0 && groundBackY != null && groundFrontY != null) {
-    rino.y = Math.min(rino.y, Math.min(groundBackY, groundFrontY) - 3);
-    rinoVY = 0;
+  if (rino.vy > 0 && rino.f) {
+    rino.vy = 0;
     console.log('CHÃO')
     rino.j = 0;
-    rinoPawBackLanded = 1;
-    rinoPawFrontLanded = 1;
   } else {
-    // apoio: as patas devem tocar o topo de um elemento de chão (K:'T' ou 'O');
+    // As patas devem tocar o topo de um elemento de chão (K:'F' ou 'O');
     // sem apoio em alguma pata e fora do salto, o rino entra em queda:
-    rinoPawBackLanded = groundBackY != null;
-    rinoPawFrontLanded = groundFrontY != null;
-    if (!rino.j && !(rinoPawBackLanded && rinoPawFrontLanded)) rino.j = 4;
+    if (!rino.j && !rino.f) rino.j = 4;
   }
-  rino.pfl = rinoPawFrontLanded;
-  rino.pbl = rinoPawBackLanded;
   /* * * END colision test * * * * * * * * * * * * * * * * * * * */
 
   // Update elements state to the main thread, allowing canvas update:
-  rino.L = rinoLife;
+  rino.l = rinoLife;
   rino.s = rinoSpeed;
   postMessage(['E', elements]);
   if (rinoLife == 0) postMessage(['NC', 99]);
@@ -189,5 +224,7 @@ function loopInteration() {
 
 setInterval(loopInteration ,16);
 
+export const __rinoIsGrounded = rinoIsGrounded
 export const __loopInteration = loopInteration
 export const __groundTopFor = groundTopFor
+//export const __solidAt = solidAt

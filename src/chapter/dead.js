@@ -14,6 +14,7 @@ chapters[99] = {
     }, 3000);
   },
   T1(z) {
+    camera = { x: 0, y: 0 };
     if (z>1) return;
     if (dieRotate < dieRotateLimit) {
       if (dieIncMult < 1) dieIncMult += 0.001;

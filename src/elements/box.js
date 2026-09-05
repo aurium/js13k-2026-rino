@@ -1,9 +1,7 @@
-const ClassBox = (cx,cy,w,h,z,c)=> ({
+// x,y is the center.
+const ClassBox = (x,y,w,h,z,c)=> ({
   K: 'O', // Klass: Object
-  L: cx - w/2,
-  R: cx + w/2,
-  T: cy - h/2,
-  B: cy + h/2,
+  x,y,w,h,
   z,c,
   /** Draw */
   d() {

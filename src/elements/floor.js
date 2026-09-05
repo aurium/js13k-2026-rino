@@ -8,7 +8,7 @@
  @arg {string} k - G=grass R=rocky
  */
 const ClassFloor = (L,R,T,B,z=1,k='G')=> ({
-  K: 'T', // Klass: Terrain
+  K: 'F', // Klass: Floor
   L,R,T,B,z,k,
   /** Draw */
   d() {
@@ -31,14 +31,7 @@ const ClassFloor = (L,R,T,B,z=1,k='G')=> ({
       !(i%3||i%5) ? [L+i/w,T+.1] :
       [L+i/w+(v*h*((i%5+i%3)/8))/1.5,T-.5-h]
     }).flat()
-    let path = mkPath(
-      ...pathGrass,
-      R,B, L,B, 'z'
-    );
     ctx.fill(mkPath(...pathGrass, R,B, L,B));
     ctx.stroke(mkPath(...pathGrass));
-
-    // style('f004',.3,'0000');
-    // ctx.Q(L,T,R-L,B-T);
   }
 })
