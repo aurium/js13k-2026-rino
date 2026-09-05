@@ -9,6 +9,7 @@
 const ClassWall = (L,R,T,B,z=1)=> ({
   K: 'W', // Klass: Wall
   L,R,T,B,z,
+  x: (L+R)/2,
   /** Draw */
   d() {
     const {L,R,T,B,z} = this

@@ -135,8 +135,9 @@ return {
     );
     ctx.fill(path);
     ctx.stroke(path);
-    style('0F08', .2, '00F4');
-    ctx.Q(L, T, R-L, B-T);
+    // Colision box:
+    // style('0F08', .2, '00F4');
+    // ctx.Q(L, T, R-L, B-T);
   }
 }
 }

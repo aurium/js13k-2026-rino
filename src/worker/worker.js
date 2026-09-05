@@ -122,17 +122,6 @@ function rinoIsGrounded(someRino) {
   return pawBackLanded && pawFrontLanded;
 }
 
-function testColisionX(e1) {
-  for (const e2 of elements) {
-    if (
-      (e2.K=='W' || e2.K=='O') &&
-      e1.z == e2.z &&
-      e1.B > e2.T && e1.T < e2.B
-    ) {
-      if (e1.L < e2.R && e1.R > e2.L) return e2;
-    }
-  }
-}
 function testColisionFloor(o1, o2) {
   for (const el of elements) {
     if (o1.z == o2.z && (o2.K=='F' || o2.K=='O')) {
@@ -164,7 +153,10 @@ function loopInteration() {
     rino.vx = .07 * rino.r * rinoSpeed;
     rino.x += rino.vx;
   }
-  else rinoSpeed = 1;
+  else {
+    rinoSpeed = 1;
+    rino.vx = 0;
+  }
 
   if (rino.j==1) {
     rino.vy -= .02;
@@ -184,26 +176,6 @@ function loopInteration() {
   /* * * BEGIN colision test and update status and positions * * */
   /** @member {boolean} f - rino in foor = grounded */
   rino.f = !!rinoIsGrounded(rino);
-
-  for (e1 of elements) if (e1.K=='B' || e1.K=='O') {
-    let e2 = testColisionX(e1);
-    if (e2) {
-      let v = e1.vx || -e2.vx || .1;
-      if (e2.K == 'W') e1.x += -v;
-      else { // e2.K == 'O'
-        e1.x += -v/2;
-        e2.x += v/2;
-      }
-    }
-    if (e1.K == 'O') {
-      e1.L = e1.x - e1.w/2;
-      e1.R = e1.x + e1.w/2;
-      e1.T = e1.y - e1.h/2;
-      e1.B = e1.y + e1.h/2;
-    }
-  }
-  // pouso: somente caindo (vy>0; no ápice do salto vy é 0) e com as duas patas
-  // sobre o topo de um elemento, o rino apoia sem atravessá-lo:
   if (rino.vy > 0 && rino.f) {
     rino.vy = 0;
     console.log('CHÃO')
@@ -213,6 +185,32 @@ function loopInteration() {
     // sem apoio em alguma pata e fora do salto, o rino entra em queda:
     if (!rino.j && !rino.f) rino.j = 4;
   }
+
+  /* * * BEGIN Test horizontal colisions * * */
+  for (let i=0; e1=elements[i]; i++) if (e1.K=='B' || e1.K=='O') {
+    for (let e2 of elements) {
+      if (
+        e1 != e2 && // There is no self colision.
+        e1.z == e2.z && // Is in the same Z layer.
+        (e1.K != 'B' || e2.K != 'B' ) && // Two Bio Being wont colide this way.
+        (e2.K=='W' || e2.K=='O' || e2.K=='B') && // Collidible types.
+        e1.B > e2.T && e1.T < e2.B && // Shares some y.
+        e1.L < e2.R && e1.R > e2.L // Shares some x.
+      ) {
+        let inside = Math.min(e2.R-e1.L, e1.R-e2.L);
+        let vec = Math.sign(e1.x - e2.x);
+        e1.x += (inside * vec + vec)/9;
+      }
+    }
+    if (e1.K == 'O') { // Update object klass
+      e1.L = e1.x - e1.w/2;
+      e1.R = e1.x + e1.w/2;
+      e1.T = e1.y - e1.h/2;
+      e1.B = e1.y + e1.h/2;
+    }
+  }
+  /* * * END Test horizontal colisions * * * */
+
   /* * * END colision test * * * * * * * * * * * * * * * * * * * */
 
   // Update elements state to the main thread, allowing canvas update:
@@ -226,5 +224,4 @@ setInterval(loopInteration ,16);
 
 export const __rinoIsGrounded = rinoIsGrounded
 export const __loopInteration = loopInteration
-export const __groundTopFor = groundTopFor
-//export const __solidAt = solidAt
+export const __testColisionFloor = testColisionFloor
