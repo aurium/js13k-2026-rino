@@ -6,7 +6,7 @@
  @arg {number} B - bottom
  @arg {number} z - Z Plan
  */
-const ClassWall = (L,R,T,B,z=1)=> ({
+const ClassWall = (L,R,T,B,z=1,drawTop)=> ({
   K: 'W', // Klass: Wall
   L,R,T,B,z,
   x: (L+R)/2,
@@ -23,16 +23,23 @@ const ClassWall = (L,R,T,B,z=1)=> ({
     ctx.fillStyle = gradient;
 
     let w = 3; // Texture Width
-    let steps = (B-T)*w+1;
-    let pathRight = [];
-    let pathLeft = Array.from({length: steps}, (_,i) => {
+    let pathLeft = [];
+    let pathRight = Array.from({length: (B-T)*w+1}, (_,i) => {
       let h = ( i%4 + (i-999)%5 ) / 30 // Texture Heigth Increment
-      pathRight[i]=[ R+h, B-i/w ]
-      return [ L+h, T+i/w ]
+      pathLeft[i]=[ L+h, B-i/w ]
+      return [ R+h, T+i/w ]
     }).flat()
-    ctx.fill(mkPath(...pathLeft, ...pathRight.flat(), 'z'));
-    ctx.stroke(mkPath(...pathLeft));
-    //ctx.stroke(mkPath((L+R)/2, T, (L+R)/2, B));
-    ctx.stroke(mkPath(...pathRight.flat()));
+    pathLeft.push(L,T)
+    pathRight.push(R,B)
+    let pathTop = drawTop ? Array.from({length: (R-L)*w+1}, (_,i) => {
+      let h = ( i%4 + (i-999)%5 ) / 15 // Texture Heigth Increment
+      return [ L+i/w, T+h ]
+    }).flat() : []
+    ctx.fill(mkPath(...pathLeft.flat(), ...pathTop, ...pathRight));
+    ctx.stroke(mkPath(...pathLeft.flat()));
+    if (pathTop) ctx.stroke(mkPath(...pathTop));
+    ctx.stroke(mkPath(...pathRight));
+    // ctx.fillStyle = '#F004'
+    // ctx.fiRt(L-camera.x,T-camera.y, R-L, B-T);
   }
 })

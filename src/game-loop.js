@@ -24,6 +24,8 @@ function initGame() {
       life.innerHTML = '♥'.repeat(rinoLife) + `<b>${'♥'.repeat(10-rinoLife)}</b>`;
     }
 
+    curChapter.T0?.(); // Chapter Tic. Allows toupdate History and objects.
+
     /* * * BEGIN Update Camara * * * * * * * * * * * * * */
     let targetX = rino.x + 10*rino.r;
     // Camera dist X to Target = abs(camera.x - targetX)
@@ -50,7 +52,7 @@ function initGame() {
       ctx.sae();
       ctx.scale(1/(.75+z/4), 1/(.75+z/4));
       drawingPlanZ = z;
-      for (const el of elements.filter(el=>el.z==z)) {
+      for (const el of elements.filter(el=>el.z==z).sort(sortElementsForPrinting)) {
         el.d(tic)
       }
       ctx.ree();
@@ -59,5 +61,12 @@ function initGame() {
     }
     ctx.ree();
     writeTitle(ctx);
+    writeHist();
   }, 16);
+}
+
+function sortElementsForPrinting(a, b) {
+  let aN = a.K=='F' ? a.T : a.B-1;
+  let bN = b.K=='F' ? b.T : b.B-1;
+  return aN < bN ? -1 : 1;
 }

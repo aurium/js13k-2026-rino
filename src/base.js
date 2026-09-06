@@ -3,7 +3,7 @@
 
 const log = console.log;
 
-let { PI:halfTurn, abs, sqrt, cos, sin } = Math;
+let { PI:halfTurn, abs, sqrt, cos, sin, floor } = Math;
 
 let
   curChapterNum,
@@ -45,17 +45,30 @@ window.onresize = ()=> {
 }
 
 function writeTitle(ctx) {
-  ctx.fillStyle = '#000';
+  if (rino.x > 18) return;
+  let alpha = 15;
+  if (rino.x > 10) alpha = 35 - floor(rino.x*2);
+  ctx.fillStyle = '#000'+alpha.toString(16);
   ctx.textAlign = 'left';
   let titleSize = 4
   if (curChapterNum!=99) {
     ctx.font = `bold ${5*unt}px cursive`;
-    ctx.fillText(`Chapter ${curChapterNum}`, unt*2, unt*5);
+    ctx.fillText(`Chapter ${curChapterNum}`, 2*unt, 5*unt);
   } else {
     titleSize = 8
   }
   ctx.font = `bold ${titleSize*unt}px cursive`;
-  ctx.fillText(curChapter.t, unt*2, unt*9);
+  ctx.fillText(curChapter.t, 2*unt, 9*unt);
+}
+
+function writeHist() {
+  if (!curChapter.h) return;
+  ctx.fillStyle = '#000';
+  ctx.textAlign = curChapter.h.p ? 'right' : 'left';
+  ctx.font = `bold ${2*unt}px cursive`;
+  curChapter.h.t.split('\n').map((s, i)=>
+    ctx.fillText(s, (curChapter.h.p ? 78 : 2)*unt, (4+i*2)*unt)
+  );
 }
 
 function mkPlayer(...a) {
