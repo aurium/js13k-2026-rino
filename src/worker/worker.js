@@ -29,6 +29,7 @@ postMessage(['A']);
 let rino,
   rinoJumpTimeout,
   rinoSpeed = 1,
+  rinoDashEnergy = 0,
   rinoPawBackLanded,
   rinoPawFrontLanded,
   elements,
@@ -78,6 +79,13 @@ self.onmessage = ({data: [event, payload]})=> {
     if (rinoJumpTimeout) clearTimeout(rinoJumpTimeout);
     if (rino.j == 2) rinoJumpReachedHighestY(1);
     else rinoIsDropping();
+  }
+
+  if (event == 'Rd1' && rinoDashEnergy) { // Rino wants to Dash.
+    rino.D = 1;
+  }
+  if (event == 'Rd0') { // Rino wants to Dash.
+    rino.D = 0;
   }
 }
 
@@ -150,6 +158,8 @@ function loopInteration() {
   /* * * END FPS * * * * * * * * * * * * * * * * * * */
 
   if (tic%10==0 && rino.y > 30 && rinoLife > 0) rinoLife--;
+
+  if (tic%10==0 && rinoDashEnergy < 100) rinoDashEnergy++;
 
   if (rino.w) {
     if (rinoSpeed < 2) rinoSpeed += .005;
@@ -239,6 +249,7 @@ function loopInteration() {
   // Update elements state to the main thread, allowing canvas update:
   rino.l = rinoLife;
   rino.s = rinoSpeed;
+  rino.De = rinoDashEnergy;
   postMessage(['E', elements]);
   if (rinoLife == 0) postMessage(['NC', 99]);
 }

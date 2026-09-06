@@ -28,163 +28,312 @@ function loadWorker() {
   runInContext(WORKER_SRC, createContext(sandbox));
   return {
     loopInteration: sandbox.loopInteration,
-    groundTopFor: sandbox.groundTopFor,
+    rinoIsGrounded: sandbox.rinoIsGrounded,
     self,
     posted,
   };
 }
 
-function newChapter() {
-  const rino = { K: 'B', x: 0, y: 0, z: 1, r: 1, w: 0, j: 0, P: 1 };
-  const floor = { K: 'T', L: -100, R: 100, T: FLOOR_T, B: FLOOR_B, z: 1 };
-  return { e: [floor, rino], rino };
+// Klasses: 'B' = ser vivo, 'F' = floor (chão, só pés), 'W' = wall (só colisão X),
+// 'O' = object (empurra os dois em sentidos contrários).
+function newRino(overrides = {}) {
+  return { K: 'B', x: 0, y: 0, z: 1, r: 1, w: 0, j: 0, P: 1, ...overrides };
+}
+
+function floor(L = -100, R = 100, T = FLOOR_T, B = FLOOR_B, z = 1) {
+  return { K: 'F', L, R, T, B, z };
+}
+
+function wall(L, R, T, B, z = 1) {
+  // ClassWall real define x = (L+R)/2; a nova colisão usa e2.x no vetor.
+  return { K: 'W', L, R, T, B, z, x: (L + R) / 2 };
+}
+
+function box(x, y, w, h, z = 1) {
+  return { K: 'O', x, y, w, h, z };
 }
 
 function tick(fn, times) {
   for (let i = 0; i < times; i++) fn();
 }
 
-it("colisão com o chão: o rino não atravessa o piso e para de cair", () => {
+it("colisão com o chão: o rino pousa na faixa do topo (F) e para de cair", () => {
   const { loopInteration, self } = loadWorker();
-  const { e, rino } = newChapter();
-  self.onmessage({ data: ['NC', { c: 1, e }] });
+  const rino = newRino();
+  self.onmessage({ data: ['NC', { c: 1, e: [floor(), rino] }] });
 
   self.onmessage({ data: ['Rj1', {}] }); // começa a subir
-  let maxY = rino.y;
-  tick(() => {
-    loopInteration();
-    maxY = Math.max(maxY, rino.y);
-  }, 30);
+  tick(loopInteration, 30);
   assert.ok(rino.y < 0, "deveria ter subido acima do topo do piso");
 
   self.onmessage({ data: ['Rj0', {}] }); // solta o salto: começa a cair
+  let maxY = rino.y;
   tick(() => {
     loopInteration();
     maxY = Math.max(maxY, rino.y);
   }, 500);
 
-  const restY = FLOOR_T - 3; // as patas repousam sobre o topo do piso
-  assert.equal(maxY, restY, "o rino nunca deve passar do topo do piso (y era menor=mais alto)");
-  assert.equal(rino.y, restY, "deve repousar exatamente sobre o topo do piso");
+  // as patas (B=y+3) param dentro da faixa de pouso [T, T+0.7)
+  assert.ok(maxY < FLOOR_T - 3 + .7, "nunca deve afundar além da faixa de pouso");
+  assert.ok(
+    rino.y >= FLOOR_T - 3 && rino.y < FLOOR_T - 3 + .7,
+    "deve repousar com as patas na faixa do topo do piso"
+  );
   assert.equal(rino.j, 0, "apoiado, o rino não deve ficar em estado de salto");
 
+  const restY = rino.y;
   tick(loopInteration, 60); // já apoiado: deve permanecer estável
-  assert.equal(rino.y, restY, "tendo parado de cair, deve ficar parado sobre o piso");
-});
-
-it("colisão com o chão: rino dentro do bloco do piso caindo volta a apoiar sobre ele", () => {
-  const { loopInteration, self } = loadWorker();
-  const { e, rino } = newChapter();
-  rino.y = FLOOR_T + 5; // dentro do bloco do piso, abaixo do topo
-  self.onmessage({ data: ['NC', { c: 1, e }] });
-  rino.j = 4; // em queda
-
-  tick(loopInteration, 2);
-
-  assert.equal(rino.y, FLOOR_T - 3, "deve voltar a apoiar sobre o topo do piso");
-  assert.equal(rino.j, 0);
+  assert.equal(rino.y, restY, "tendo pousado, deve ficar parado sobre o piso");
 });
 
 it("sem chão sob as patas, o rino perde o apoio e entra em queda (j=4)", () => {
   const { loopInteration, self } = loadWorker();
-  const rino = { K: 'B', x: 0, y: 0, z: 1, r: 1, w: 0, j: 0, P: 1 };
+  const rino = newRino();
   self.onmessage({ data: ['NC', { c: 1, e: [rino] }] });
 
   loopInteration();
   assert.equal(rino.j, 4, "sem apoio o rino deve entrar em queda");
 
   const startY = rino.y;
-  tick(loopInteration, 100);
+  tick(loopInteration, 60);
   assert.ok(rino.y > startY, "sem piso o rino deve seguir caindo");
 });
 
 it("apenas uma pata com chão: o rino perde o apoio e entra em queda (j=4)", () => {
   const { loopInteration, self } = loadWorker();
-  // piso estreito sob apenas a pata dianteira: traseira (-4), dianteira (+2)
-  const rino = { K: 'B', x: 0, y: 0, z: 1, r: 1, w: 0, j: 0, P: 1 };
-  const floor = { K: 'T', L: -3, R: 4, T: FLOOR_T, B: FLOOR_B, z: 1 };
-  self.onmessage({ data: ['NC', { c: 1, e: [floor, rino] }] });
+  const rino = newRino();
+  // piso estreito sob apenas a pata dianteira (+2): a traseira (-4) fica fora.
+  self.onmessage({ data: ['NC', { c: 1, e: [floor(-3, 4), rino] }] });
 
   loopInteration();
 
   assert.equal(rino.j, 4, "com uma pata sem chão o rino deve entrar em queda");
 });
 
-describe("groundTopFor", () => {
-  const rino = { K: 'B', x: 0, y: 0, z: 1, r: 1, w: 0, j: 0, P: 1 };
-  const floor = (L, R, T, B, z = 1, k = 'T') => ({ K: k, L, R, T, B, z });
-
-  function load(e) {
-    const { groundTopFor, self } = loadWorker();
+describe("rinoIsGrounded", () => {
+  // rinoIsGrounded lê someRino.B; B só é setado no loopInteration
+  // (B = y + 3). Aqui o setamos a partir de y, posição de repouso.
+  function loaded(e) {
+    const { rinoIsGrounded, self } = loadWorker();
     self.onmessage({ data: ['NC', { c: 1, e }] });
-    return groundTopFor;
+    const rino = e.find(el => el.P);
+    rino.B = rino.y + 3;
+    return { rino, rinoIsGrounded };
   }
 
-  it("retorna o topo (T) quando a pata está sobre um elemento de chão no mesmo z", () => {
-    const groundTopFor = load([floor(-10, 10, 3, 100), rino]);
-    assert.equal(groundTopFor(0, 3), 3); // pata tocando o topo
-    assert.equal(groundTopFor(0, 10), 3); // pata dentro do corpo do piso
+  it("true com as duas patas (x-4*r e x+2*r) sobre o topo de um piso F no mesmo z", () => {
+    const { rino, rinoIsGrounded } = loaded([floor(-10, 10), newRino()]);
+    assert.ok(rinoIsGrounded(rino), "patas em -4 e +2 dentro de (-10,10), B na faixa");
   });
 
-  it("retorna null com a pata acima do topo (no ar, ainda não tocando)", () => {
-    const groundTopFor = load([floor(-10, 10, 3, 100), rino]);
-    assert.equal(groundTopFor(0, 2), null);
+  it("false com apenas uma pata sobre o piso", () => {
+    const { rino, rinoIsGrounded } = loaded([floor(-3, 4), newRino()]);
+    assert.ok(!rinoIsGrounded(rino), "pata traseira (-4) fora de (-3,4)");
   });
 
-  it("retorna null com a pata abaixo do fundo do piso", () => {
-    const groundTopFor = load([floor(-10, 10, 3, 100), rino]);
-    assert.equal(groundTopFor(0, 101), null);
+  it("false com as patas acima do topo (B < T)", () => {
+    const { rino, rinoIsGrounded } = loaded([floor(-10, 10), newRino()]);
+    rino.y = -1;
+    rino.B = rino.y + 3; // B = 2 < 3
+    assert.ok(!rinoIsGrounded(rino));
   });
 
-  it("retorna null com a pata fora do limite horizontal do piso", () => {
-    const groundTopFor = load([floor(-10, 10, 3, 100), rino]);
-    assert.equal(groundTopFor(-11, 3), null);
-    assert.equal(groundTopFor(11, 3), null);
+  it("false com as patas abaixo da faixa de pouso (B >= T+0.7)", () => {
+    const { rino, rinoIsGrounded } = loaded([floor(-10, 10), newRino()]);
+    rino.y = 1;
+    rino.B = rino.y + 3; // B = 4 >= 3.7
+    assert.ok(!rinoIsGrounded(rino));
   });
 
-  it("ignora elementos de outro layer Z", () => {
-    const groundTopFor = load([
-      floor(-10, 10, -5, 100, 2), // piso mais alto, porém em outro z
-      floor(-10, 10, 3, 100, 1),
-      rino,
+  it("bordas horizontais exclusivas: pata exatamente em cima de L/R não apoia", () => {
+    const left = loaded([floor(-4, 4), newRino()]); // pata traseira em -4 == L
+    assert.ok(!left.rinoIsGrounded(left.rino));
+    const insideLeft = loaded([floor(-5, 4), newRino()]);
+    assert.ok(insideLeft.rinoIsGrounded(insideLeft.rino), "-4 > -5 deve apoiar");
+    const right = loaded([floor(-4, 2), newRino()]); // pata dianteira em 2 == R
+    assert.ok(!right.rinoIsGrounded(right.rino));
+    const insideRight = loaded([floor(-6, 3), newRino()]);
+    assert.ok(insideRight.rinoIsGrounded(insideRight.rino), "2 < 3 deve apoiar");
+  });
+
+  it("com r=-1 as patas invertem (x+4 e x-2)", () => {
+    const { rino, rinoIsGrounded } = loaded([floor(-3, 5), newRino({ r: -1 })]);
+    assert.ok(rinoIsGrounded(rino), "patas em 4 e -2 dentro de (-3,5)");
+  });
+
+  it("objetos K:'O' apoiam no mesmo z, mas não em z diferente", () => {
+    const same = loaded([
+      { K: 'O', L: -5, R: 5, T: -5, B: 5, z: 1 },
+      newRino({ y: -8 }), // B = -5 na faixa de pouso [-5,-4.3)
     ]);
-    assert.equal(groundTopFor(0, 3), 3, "deve considerar apenas o piso do mesmo z");
-    assert.equal(groundTopFor(0, 0), null, "piso de outro z não apoia esta pata");
-  });
-
-  it("considera elementos do mesmo layer Z do rino", () => {
-    const groundTopFor = load([
-      floor(-10, 10, -5, 100, 3), // outros z também presentes
-      floor(-10, 10, 3, 100, 1),
-      rino,
+    assert.ok(same.rinoIsGrounded(same.rino));
+    const otherZ = loaded([
+      { K: 'O', L: -5, R: 5, T: -5, B: 5, z: 2 },
+      newRino({ y: -8 }),
     ]);
-    assert.equal(groundTopFor(0, 3), 3);
+    assert.ok(!otherZ.rinoIsGrounded(otherZ.rino), "objeto de outro z não apoia");
   });
 
-  it("considera objetos K:'O' como chão, desde que no mesmo z", () => {
-    const floorO = floor(-10, 10, 3, 100, 1, 'O');
-    const groundTopFor = load([floorO, rino]);
-    assert.equal(groundTopFor(0, 3), 3);
-    const floorOtherZ = floor(-10, 10, 3, 100, 2, 'O');
-    const groundTopForOtherZ = load([floorOtherZ, rino]);
-    assert.equal(groundTopForOtherZ(0, 3), null);
-  });
-
-  it("ignora o próprio rino e outros seres (K:'B')", () => {
-    const groundTopFor = load([
-      floor(-10, 10, 3, 100, 1),
-      { K: 'B', x: 0, y: 0, z: 1, P: 0 }, // outro ser vivo, não é chão
-      rino,
+  it("paredes K:'W' não apoiam as patas", () => {
+    const { rino, rinoIsGrounded } = loaded([
+      wall(-10, 10, FLOOR_T, FLOOR_B),
+      newRino(),
     ]);
-    assert.equal(groundTopFor(0, 3), 3);
+    assert.ok(!rinoIsGrounded(rino));
   });
 
-  it("retorna o topo do primeiro elemento de chão que casa (ordem do array)", () => {
-    const groundTopFor = load([
-      floor(-10, 10, 7, 100, 1),
-      floor(-10, 10, 3, 100, 1),
-      rino,
-    ]);
-    assert.equal(groundTopFor(0, 8), 7);
+  it("os próprios seres K:'B' (sem piso/objeto) não apoiam", () => {
+    const { rino, rinoIsGrounded } = loaded([newRino()]);
+    assert.ok(!rinoIsGrounded(rino));
+  });
+});
+
+describe("colisão horizontal", () => {
+  // A nova resolução é posicional: o loop do worker passa por cada B/O (e1),
+  // procura overlap de caixa com W/O/B (e2) e empurra APENAS e1 para fora, por
+  // `(inside+1)/9`, onde `inside` é a penetração horizontal e a direção é
+  // `Math.sign(e1.x - e2.x)`. Paredes (W) nunca são empurradas; objetos (O) são
+  // empurrados na sua própria iteração; dois seres (B) não colidem entre si.
+
+  function loaded(e, rinoOverrides = {}) {
+    const { loopInteration, self } = loadWorker();
+    const rino = newRino(rinoOverrides);
+    self.onmessage({ data: ['NC', { c: 1, e: [floor(), ...e, rino] }] });
+    return { loopInteration, rino };
+  }
+
+  describe("parede K:'W'", () => {
+    const wRight = wall(7, 20, -50, 50); // x = 13.5
+
+    it("empurra o rino para fora: (inside+1)/9 na direção de e1.x - e2.x", () => {
+      const { loopInteration, rino } = loaded([wRight]);
+      loopInteration();
+      // overlap de 1 unidade (R=8 contra L=7), vec = sign(0 - 13.5) = -1
+      assert.ok(Math.abs(rino.x - (-2 / 9)) < 1e-12, "(1*-1 - 1)/9 = -2/9");
+    });
+
+    it("parede à esquerda: empurra no sentido contrário (vec = +1)", () => {
+      const { loopInteration, rino } = loaded([wall(-20, -7, -50, 50)], { x: -2 });
+      loopInteration();
+      // overlap de 1 unidade (L=-8 contra R=-7), vec = sign(-2+13.5) = +1
+      assert.ok(Math.abs(rino.x - (-16 / 9)) < 1e-12, "-2 + (1*1 + 1)/9 = -16/9");
+    });
+
+    it("nunca é empurrada (W nunca aparece como e1 no loop)", () => {
+      const { loopInteration, self } = loadWorker();
+      const rino = newRino();
+      const w = wall(7, 20, -50, 50);
+      self.onmessage({ data: ['NC', { c: 1, e: [floor(), w, rino] }] });
+      const before = { L: w.L, R: w.R, x: w.x };
+      loopInteration();
+      assert.deepEqual({ L: w.L, R: w.R, x: w.x }, before);
+    });
+
+    it("separação convergente: nos ticks seguintes para de sobrepor e x estabiliza", () => {
+      const { loopInteration, rino } = loaded([wRight]);
+      tick(loopInteration, 60);
+      assert.ok(rino.R <= 7 + 1e-9, "a frente (x+8) para de invadir a parede (L=7)");
+      const xEnd = rino.x;
+      tick(loopInteration, 20);
+      assert.equal(rino.x, xEnd, "separado e sem walk, x não muda mais");
+    });
+  });
+
+  describe("objeto K:'O'", () => {
+    it("empurra o rino e o objeto em sentidos opostos (e1 x e2 em dois passos do loop)", () => {
+      const { loopInteration, self } = loadWorker();
+      const rino = newRino();
+      // caixa explícita L=2,R=6,T=-2,B=2 para o objeto colidir já no 1º tick
+      // (sem L/R/T/B ele só materializa a caixa DEPOIS da própria iteração).
+      const box = { K: 'O', x: 4, y: 0, w: 4, h: 4, z: 1, vx: 0, vy: 0, L: 2, R: 6, T: -2, B: 2 };
+      self.onmessage({ data: ['NC', { c: 1, e: [floor(), box, rino] }] });
+
+      loopInteration();
+      // box como e1: inside=6, vec=+1            => +7/9 (para a direita)
+      // rino como e1 (caixa já atualizada): inside=47/9, vec=-1 => -56/81
+      assert.ok(Math.abs(box.x - (4 + 7 / 9)) < 1e-12, "objeto empurrado para a direita");
+      assert.ok(Math.abs(rino.x - (-56 / 81)) < 1e-12, "rino empurrado para a esquerda");
+    });
+
+    it("objeto se afasta e os dois estabilizam após deixarem de se sobrepor", () => {
+      const { loopInteration, self } = loadWorker();
+      const rino = newRino();
+      const box = { K: 'O', x: 4, y: 0, w: 4, h: 4, z: 1, vx: 0, vy: 0 };
+      self.onmessage({ data: ['NC', { c: 1, e: [floor(), box, rino] }] });
+
+      tick(loopInteration, 10);
+      assert.ok(rino.x < 0, "rino foi empurrado para a esquerda");
+      assert.ok(box.x > 4, "objeto foi empurrado para a direita");
+      assert.ok(rino.R < box.L, "deixaram de se sobrepor");
+
+      const xr = rino.x, xb = box.x;
+      tick(loopInteration, 20);
+      assert.equal(rino.x, xr, "separados, o rino para");
+      assert.equal(box.x, xb, "separados, o objeto para");
+    });
+  });
+
+  describe("não colidem em X", () => {
+    it("dois seres K:'B' entre si (Bio Being x Bio Being)", () => {
+      const { loopInteration, self } = loadWorker();
+      const a = newRino({ x: -5 });
+      const b = newRino({ x: 6, P: 0 });
+      self.onmessage({ data: ['NC', { c: 1, e: [a, b] }] });
+      tick(loopInteration, 5);
+      assert.equal(a.x, -5);
+      assert.equal(b.x, 6);
+    });
+
+    it("pisos K:'F' no eixo X (o rino continua parado e apoiado)", () => {
+      const { loopInteration, self } = loadWorker();
+      const rino = newRino();
+      self.onmessage({ data: ['NC', { c: 1, e: [floor(), rino] }] });
+      tick(loopInteration, 5);
+      assert.equal(rino.x, 0);
+      assert.equal(rino.y, 0, "continua apoiado no piso");
+    });
+
+    it("consigo mesmo (e1 != e2)", () => {
+      const { loopInteration, self } = loadWorker();
+      const rino = newRino();
+      self.onmessage({ data: ['NC', { c: 1, e: [rino] }] });
+      loopInteration();
+      assert.equal(rino.x, 0);
+    });
+  });
+});
+
+describe("paredes K:'W' bloqueiam o avanço", () => {
+  function loaded(e) {
+    const { loopInteration, self } = loadWorker();
+    const rino = newRino();
+    self.onmessage({ data: ['NC', { c: 1, e: [rino, ...e] }] });
+    return { rino, loopInteration };
+  }
+
+  it("à direita: o rino andando não avança além da face da parede (fica recuado)", () => {
+    const { rino, loopInteration } = loaded([floor(), wall(7, 20, -50, 50)]);
+    rino.w = 1;
+    tick(loopInteration, 20);
+
+    assert.equal(rino.y, 0, "deve continuar apoiado no chão");
+    // sem a parede ele avançaria ~+1.5; a resolução o recua e ele equilibra
+    // com a frente (x+8) na face (L=7), i.e. x ≈ -1.
+    assert.ok(rino.x < 0, "não avança contra a parede (foi recuado)");
+    assert.ok(rino.x > -1.4, "não recua além da face (fica encostado junto)");
+    assert.ok(rino.R <= 7.6, "a frente (x+8) não penetra fundo na parede");
+  });
+
+  it("à esquerda: idem, com o rino virado para a esquerda (r=-1)", () => {
+    const { rino, loopInteration } = loaded([floor(), wall(-20, -7, -50, 50)]);
+    rino.r = -1;
+    rino.w = 1;
+    tick(loopInteration, 2000);
+
+    assert.equal(rino.y, 0, "deve continuar apoiado no chão");
+    // equilibra com a dianteira (x+r-7) na face (R=-7), i.e. x ≈ 0.9.
+    assert.ok(rino.x > 0.5, "não avança contra a parede à esquerda (foi recuado)");
+    assert.ok(rino.x < 1.4, "não recua além da face (fica encostado junto)");
+    assert.ok(rino.L >= -7.6, "a dianteira (x+r-7) não penetra fundo na parede");
   });
 });
