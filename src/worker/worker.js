@@ -118,8 +118,11 @@ function rinoIsGrounded(someRino) {
         pawFrontX > el.L && pawFrontX < el.R &&
         someRino.B >= el.T && someRino.B < el.T+.7;
     }
+    if (pawBackLanded && pawFrontLanded) {
+      rino.y = el.T - 3;
+      return 1;
+    }
   }
-  return pawBackLanded && pawFrontLanded;
 }
 
 function testColisionFloor(o1, o2) {
@@ -171,14 +174,20 @@ function loopInteration() {
   rino.R = rino.x+rino.r+7;
   rino.T = rino.y-3;
   rino.B = rino.y+3;
+  // Update objects position.
+  for (let i=0; e1=elements[i]; i++) if (e1.K=='O') {
+    e1.vx *= .9;
+    e1.x += e1.vx;
+    e1.y += e1.vy;
+  }
   /* * * END Update Positions * * * */
 
   /* * * BEGIN colision test and update status and positions * * */
   /** @member {boolean} f - rino in foor = grounded */
   rino.f = !!rinoIsGrounded(rino);
-  if (rino.vy > 0 && rino.f) {
+  if (rino.vy && rino.f) {
     rino.vy = 0;
-    console.log('CHÃO')
+    console.log('CHÃO');
     rino.j = 0;
   } else {
     // As patas devem tocar o topo de um elemento de chão (K:'F' ou 'O');
@@ -186,20 +195,35 @@ function loopInteration() {
     if (!rino.j && !rino.f) rino.j = 4;
   }
 
-  /* * * BEGIN Test horizontal colisions * * */
   for (let i=0; e1=elements[i]; i++) if (e1.K=='B' || e1.K=='O') {
+    // Enforce gravity over objects:
+    if (e1.K=='O' && e1.vy<.5) e1.vy += .01;
+    // Test pair colisions
     for (let e2 of elements) {
       if (
         e1 != e2 && // There is no self colision.
         e1.z == e2.z && // Is in the same Z layer.
-        (e1.K != 'B' || e2.K != 'B' ) && // Two Bio Being wont colide this way.
-        (e2.K=='W' || e2.K=='O' || e2.K=='B') && // Collidible types.
-        e1.B > e2.T && e1.T < e2.B && // Shares some y.
-        e1.L < e2.R && e1.R > e2.L // Shares some x.
+        e1.B >= e2.T && e1.T <= e2.B && // Shares some y.
+        e1.L <= e2.R && e1.R >= e2.L // Shares some x.
       ) {
-        let inside = Math.min(e2.R-e1.L, e1.R-e2.L);
-        let vec = Math.sign(e1.x - e2.x);
-        e1.x += (inside * vec + vec)/9;
+        // Test dropping objects
+        if (
+          e1.K=='O' && (e2.K=='F' || e2.K=='O') // Obj can be above Floor or Obj.
+        ) {
+          if (e1.B < (e2.T+.7)) { // It is not too low. Land it.
+            e1.vy = 0;
+            e1.y = e2.T - e1.h/2;
+          }
+        }
+        // Test for horizontal colizions
+        if (
+          (e1.K != 'B' || e2.K != 'B' ) && // Two Bio Being wont colide this way.
+          (e2.K=='W' || e2.K=='O' || e2.K=='B') // Collidible types.
+        ) {
+          let inside = Math.min(e2.R-e1.L, e1.R-e2.L);
+          let vec = Math.sign(e1.x - e2.x);
+          e1.x += (inside * vec + vec)/9;
+        }
       }
     }
     if (e1.K == 'O') { // Update object klass
@@ -209,7 +233,6 @@ function loopInteration() {
       e1.B = e1.y + e1.h/2;
     }
   }
-  /* * * END Test horizontal colisions * * * */
 
   /* * * END colision test * * * * * * * * * * * * * * * * * * * */
 
