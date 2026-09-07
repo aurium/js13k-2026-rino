@@ -29,11 +29,13 @@ postMessage(['A']);
 let rino,
   rinoJumpTimeout,
   rinoSpeed = 1,
+  dashEnabled,
   rinoDashEnergy = 0,
   rinoPawBackLanded,
   rinoPawFrontLanded,
+  rinoLife = 1,
   elements,
-  rinoLife = 1;
+  curChapter;
 
 /**
  * Listen for events from main thread.
@@ -47,26 +49,27 @@ let rino,
  */
 self.onmessage = ({data: [event, payload]})=> {
   if (event == 'NC') { // New Chapter
+    curChapter = payload.c;
     elements = payload.e;
     rino = elements.find(el => el.P); // P==truish identifies the player.
-    console.log('Current Chapter:',payload.c);
+    console.log('Current Chapter:',curChapter);
     console.log('Elements:',payload.e);
     chapterInit(payload.c);
   }
 
-  // Rino can NOT change diretion while jumping (or dropping).
-  if (event == 'Rgr1' && (!rino.j || rino.r==1)) {
+  // Rino can NOT change diretion while jumping (or dropping) or dashing.
+  if (event == 'Rgr1' && !rino.D && (!rino.j || rino.r==1)) {
     if (rino.r == -1) rino.x += 2;
     rino.r=1; rino.w=1;
   }
-  if (event == 'Rgl1' && (!rino.j || rino.r==-1)) {
+  if (event == 'Rgl1' && !rino.D && (!rino.j || rino.r==-1)) {
     if (rino.r == 1) rino.x -= 2;
     rino.r=-1; rino.w=1;
   }
   if (event == 'Rgr0' && rino.r==1) rino.w=0;
   if (event == 'Rgl0' && rino.r==-1) rino.w=0;
 
-  if (event == 'Rj1' && !rino.j) { // Rino wants to Jump.
+  if (event == 'Rj1' && !rino.D && !rino.j) { // Rino wants to Jump.
     rino.j = 1; // stage 1: back paws still in the ground.
     console.log('Jump Stage', rino.j);
     rinoJumpTimeout = setTimeout(()=> {
@@ -75,17 +78,23 @@ self.onmessage = ({data: [event, payload]})=> {
       rinoJumpTimeout = setTimeout(rinoJumpReachedHighestY, 300);
     }, 300);
   }
-  if (event == 'Rj0' && rino.j) { // Rino stops the Jump impulse.
+  if (event == 'Rj0' && !rino.D && rino.j) { // Rino stops the Jump impulse.
     if (rinoJumpTimeout) clearTimeout(rinoJumpTimeout);
     if (rino.j == 2) rinoJumpReachedHighestY(1);
     else rinoIsDropping();
   }
 
-  if (event == 'Rd1' && rinoDashEnergy) { // Rino wants to Dash.
+  if (event == 'Rd1' && rinoDashEnergy) { // Rino player wants to Dash.
+    clearTimeout(rinoJumpTimeout);
+    if (rino.j == 1 || rino.j == 2) { // 45deg dash: hold jump stage 2 while dashing.
+      rino.j = 2;
+    } else {
+      rino.j = 0;
+    }
     rino.D = 1;
   }
-  if (event == 'Rd0') { // Rino wants to Dash.
-    rino.D = 0;
+  if (event == 'Rd0' && rino.D) { // Rino player stops Dash.
+    dashEnded();
   }
 }
 
@@ -102,12 +111,22 @@ function rinoIsDropping() {
   console.log('Jump Stage', rino.j);
 }
 
+/** End the dash; a 45deg dash returns to jump stage 3, then stage 4 naturally. */
+function dashEnded() {
+  rino.D = 0;
+  if (rino.j == 2) { // Was a 45deg dash.
+    rinoJumpReachedHighestY();
+  }
+}
+
 function chapterInit(c) {
   rino.vy = 0;
   rinoPawBackLanded = 0;
   rinoPawFrontLanded = 0;
   if (c==1) { // First Chapter
     rinoLife = 1;
+    rinoDashEnergy = -1;
+    dashEnabled = 0;
     for (let i=5; i<14; i++) setTimeout(()=> rinoLife++, i*300);
   }
 }
@@ -159,22 +178,35 @@ function loopInteration() {
 
   if (tic%10==0 && rino.y > 30 && rinoLife > 0) rinoLife--;
 
-  if (tic%10==0 && rinoDashEnergy < 100) rinoDashEnergy++;
+  dashEnabled ||= !(curChapter==1 && (rino.x < 10));
+  if (rinoDashEnergy==-1 && dashEnabled) rinoDashEnergy=150;
 
-  if (rino.w) {
+  if (tic%10==0 && rinoDashEnergy < 150 && dashEnabled) rinoDashEnergy++;
+
+  if (rino.D) { // Dashing
+    rino.vx = .42 * rino.r;
+    if (rino.j == 2) {
+      rino.vx = .3 * rino.r;
+      rino.vy = -.3;
+    } // 45deg dash: up-forward straight line.
+    else rino.vy = 0; // Horizontal dash: straight line, no gravity.
+    if (rinoDashEnergy > 0) rinoDashEnergy--;
+    else dashEnded();
+  }
+  else if (rino.w) {
     if (rinoSpeed < 2) rinoSpeed += .005;
     rino.vx = .07 * rino.r * rinoSpeed;
-    rino.x += rino.vx;
   }
   else {
     rinoSpeed = 1;
     rino.vx = 0;
   }
+  rino.x += rino.vx;
 
-  if (rino.j==1) {
+  if (!rino.D && rino.j==1) {
     rino.vy -= .02;
   }
-  else if (rino.j && rino.vy<.5) {
+  else if (!rino.D && rino.j && rino.vy<.5) {
     rino.vy += .015;
   }
 
@@ -195,14 +227,16 @@ function loopInteration() {
   /* * * BEGIN colision test and update status and positions * * */
   /** @member {boolean} f - rino in foor = grounded */
   rino.f = !!rinoIsGrounded(rino);
-  if (rino.vy && rino.f) {
-    rino.vy = 0;
-    console.log('CHÃO');
-    rino.j = 0;
-  } else {
-    // As patas devem tocar o topo de um elemento de chão (K:'F' ou 'O');
-    // sem apoio em alguma pata e fora do salto, o rino entra em queda:
-    if (!rino.j && !rino.f) rino.j = 4;
+  if (!rino.D) {
+    if (rino.vy && rino.f) {
+      rino.vy = 0;
+      console.log('CHÃO');
+      rino.j = 0;
+    } else {
+      // As patas devem tocar o topo de um elemento de chão (K:'F' ou 'O');
+      // sem apoio em alguma pata e fora do salto, o rino entra em queda:
+      if (!rino.j && !rino.f) rino.j = 4;
+    }
   }
 
   for (let i=0; e1=elements[i]; i++) if (e1.K=='B' || e1.K=='O') {

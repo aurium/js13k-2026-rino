@@ -4,7 +4,7 @@ const unsharedMemory = {
   /** @member {number} ln - the last now(). */
   ln: 0,
   /** @member {number} t - the general animation step, the base index. */
-  t: 0
+  t: 0,
 };
 return {
   K: 'B', // Klass: Bio Being
@@ -24,8 +24,8 @@ return {
   /** Rotation Angle */
   a: 0,
   /** Draw */
-  d() {
-    let {x, y, r, j, a, w, s, L,R,T,B} = this
+  d(tic) {
+    let {x, y, r, j, a, w, s, D,G, L,R,T,B} = this;
 
     if (curChapterNum < 99) {
       if (j==1 && abs(a)<limJumpAngle) a -= r*.03;
@@ -81,6 +81,26 @@ return {
 
     let t = sin( (unsharedMemory.t % .5) * oneTurn )/3;
     if (!w) t=0;
+
+    // DASH!
+    if (D && this.P) {
+      // ['F00', 'F70', 'FE0', '0E0', '0AF', 'A4F'].map((color, dashY)=> {
+      [0, 30, 60, 120, 200, 280].map((color, dashY)=> {
+        rainbow.push({
+          ...((j==1||j==2) ? {
+            x: x-6*rino.r,  y: y+1+dashY/2,
+            vx: -.15*rino.r+(dashY-3)/100*rino.r, vy:.15+(dashY-3)/200+Math.random()/100,
+          } : {
+            x: x-5*rino.r,  y: y-2+dashY/2,
+            vx: -.2*rino.r, vy:(dashY-3)/200+Math.random()/100,
+          }),
+          r: .2+Math.random()/3,
+          c: `hsl(${color} 100 ${35+Math.random()*30})`,
+          // c: color+'C',
+          t:0
+        });
+      });
+    }
 
     style('000', .2, '888');
     // hiden Back Paw

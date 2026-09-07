@@ -23,6 +23,7 @@ function initGame() {
       rinoLife = rino.l;
       life.innerHTML = '♥'.repeat(rinoLife) + `<b>${'♥'.repeat(10-rinoLife)}</b>`;
     }
+    De.style.setProperty('--v', rino.De+'px');
 
     curChapter.T0?.(); // Chapter Tic. Allows toupdate History and objects.
 
@@ -52,6 +53,15 @@ function initGame() {
       ctx.sae();
       ctx.scale(1/(.75+z/4), 1/(.75+z/4));
       drawingPlanZ = z;
+      if (z == rino.z) {
+        // log('Gliter', rainbow.length, rainbow[28]?.x.toFixed(2), rainbow[28]?.y.toFixed(2), rainbow[28]?.c)
+        for (let glitter of rainbow) {
+          glitter.x += glitter.vx;
+          glitter.y += glitter.vy;
+          ctx.C(glitter.x, glitter.y, glitter.r+glitter.t/400, '0000', glitter.c);
+        }
+        rainbow = rainbow.filter(g => g.t++ < 300);
+      }
       for (const el of elements.filter(el=>el.z==z).sort(sortElementsForPrinting)) {
         el.d(tic)
       }

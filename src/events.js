@@ -1,19 +1,17 @@
 document.onkeydown = (ev)=> {
   if (ev.repeat) return;
   if (inputDisabled) return;
-  if (ev.key == 'ArrowRight') worker.postMessage(['Rgr1'])
-  if (ev.key == 'ArrowLeft') worker.postMessage(['Rgl1'])
-  if (ev.key == 'ArrowUp') {
-    worker.postMessage(['Rj1']) // Rino wants to start Jump.
-  }
+  if (ev.key == 'ArrowRight') worker.postMessage(['Rgr1']);
+  if (ev.key == 'ArrowLeft') worker.postMessage(['Rgl1']);
+  if (ev.key == 'ArrowUp') worker.postMessage(['Rj1']); // Rino wants to start Jump.
+  if (ev.key == ' ') worker.postMessage(['Rd1']);
 }
 
 document.onkeyup = (ev)=> {
-  if (ev.key == 'ArrowRight') worker.postMessage(['Rgr0'])
-  if (ev.key == 'ArrowLeft') worker.postMessage(['Rgl0'])
-  if (ev.key == 'ArrowUp') {
-    worker.postMessage(['Rj0']) // Rino stops the Jump impulse.
-  }
+  if (ev.key == 'ArrowRight') worker.postMessage(['Rgr0']);
+  if (ev.key == 'ArrowLeft') worker.postMessage(['Rgl0']);
+  if (ev.key == 'ArrowUp') worker.postMessage(['Rj0']); // Rino stops the Jump impulse.
+  if (ev.key == ' ') worker.postMessage(['Rd0']);
 }
 
 worker.onmessage = ({data: [event, payload]})=> {

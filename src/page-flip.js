@@ -6,6 +6,8 @@ const nextChapter = ()=> {
   curChapter = chapters[curChapterNum];
   log(`Starting Chapeter ${curChapterNum}:`, curChapter.t);
   camera = 0;
+  rainbow = [];
+  De.style.opacity = 0;
   curChapter.s();
   camera = { x: rino.x+10, y: rino.y-5 };
   elements = curChapter.e;
@@ -22,6 +24,7 @@ const nextChapter = ()=> {
   onresize();
   const oldCtx = ctx
   ctx = getCtx(chapterCanvas);
+  ctx.lineCap = 'round';
 
   // Hide the left half of the new canvas until the page flip.
   chapterCanvas.style.clipPath = 'rect(auto auto auto 50%)';
@@ -71,5 +74,6 @@ const nextChapter = ()=> {
     page.remove()
     disableInput(0);
     flippingPage = 0;
+    De.style.opacity = 1;
   }, 3000);
 }

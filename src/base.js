@@ -22,6 +22,7 @@ let
   inputDisabled = 1,
   rino = {},
   rinoLife = 0,
+  rainbow = [], // The dash's glitter rainbow
   worker = new Worker('worker.js');
 
 function disableInput(v=1) {
@@ -84,7 +85,7 @@ function getCtx(canvas) {
   Object.keys(ctx.constructor.prototype).map(m => {
     if (ctx[m].call) {
       let m2 = m.replace(/(^..|[A-Z])[a-z]+/g, '$1')+m.at(-1);
-      //log(m+':',m2);
+      // log('CTX.'+m+':',m2);
       ctx[m2] = (...a)=> {
         a = a.map(n=>n.toFixed ? untZ(n) : n);
         return ctx[m](...a)
@@ -97,7 +98,7 @@ function getCtx(canvas) {
   }
   ctx.C = (cx,cy,r, strokeStyle, fillStyle)=> {
     ctx.strokeStyle = '#'+strokeStyle;
-    ctx.fillStyle = '#'+fillStyle;
+    ctx.fillStyle = fillStyle[0]=='h' ? fillStyle : '#'+fillStyle;
     ctx.beginPath();
     ctx.ellipse(untZ(cx - camera.x), untZ(cy - camera.y), untZ(r), untZ(r), 0, 0, oneTurn);
     ctx.closePath();

@@ -56,6 +56,37 @@ canvas {
   }
 }
 
+#De {
+  left: 1em;
+  bottom: 1em;
+  padding: 2px;
+  width: 150px;
+  height: 14px;
+  border-radius: 1em;
+  background: #0007;
+  opacity: 0;
+  transition: 1s;
+  b {
+    top: 50%;
+    transform: translateY(-50%);
+    display: block;
+    width: var(--v);
+    height: min(14px, var(--v));
+    border-radius: 1em;
+    background: linear-gradient(21.314deg in hsl longer hue, red, red, red);
+    background-size: 200px 78px;
+    animation: 8s linear infinite De;
+  }
+}
+@keyframes De {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 -78px;
+  }
+}
+
 #dbg {
   background: #0007;
   padding: .5em 1em;
