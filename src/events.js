@@ -31,8 +31,8 @@ worker.onmessage = ({data: [event, payload]})=> {
     })
   }
   if (event=='NC') { // New Chapter
-    if (payload) curChapterNum = payload;
-    else curChapterNum++;
-    nextChapter();
+    // if (payload) curChapterNum = payload;
+    // else curChapterNum++;
+    nextChapter(payload);
   }
 }

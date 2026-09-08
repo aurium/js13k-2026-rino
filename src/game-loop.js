@@ -1,6 +1,6 @@
 function initGame() {
 
-  curChapterNum = 1;
+  //curChapterNum = 1;
   nextChapter();
 
   let lastTime = performance.now(),
@@ -25,7 +25,7 @@ function initGame() {
     }
     De.style.setProperty('--v', rino.De+'px');
 
-    curChapter.T0?.(); // Chapter Tic. Allows toupdate History and objects.
+    curChapter.T0?.(tic); // Chapter Tic. Allows toupdate History and objects.
 
     /* * * BEGIN Update Camara * * * * * * * * * * * * * */
     let targetX = rino.x + 10*rino.r;
@@ -58,12 +58,14 @@ function initGame() {
         for (let glitter of rainbow) {
           glitter.x += glitter.vx;
           glitter.y += glitter.vy;
-          ctx.C(glitter.x, glitter.y, glitter.r+glitter.t/400, '0000', glitter.c);
+          ctx.C(glitter.x, glitter.y, glitter.r+Math.sqrt(glitter.t/200), glitter.c);
         }
-        rainbow = rainbow.filter(g => g.t++ < 300);
+        rainbow = rainbow.filter(g => g.t++ < 400);
       }
       for (const el of elements.filter(el=>el.z==z).sort(sortElementsForPrinting)) {
-        el.d(tic)
+        // Draw the element, only if it is visible:
+        if (el.L < camera.x+10*z || el.R > camera.x-10*z) el.d(tic);
+        else log('Ignore',el.K, el.L)
       }
       ctx.ree();
       curChapter.T2?.(z); // Chapter specific drawings, After Z level.

@@ -50,11 +50,12 @@ let rino,
 self.onmessage = ({data: [event, payload]})=> {
   if (event == 'NC') { // New Chapter
     curChapter = payload.c;
-    elements = payload.e;
-    rino = elements.find(el => el.P); // P==truish identifies the player.
+    updateElements(payload.e, 1);
     console.log('Current Chapter:',curChapter);
-    console.log('Elements:',payload.e);
     chapterInit(payload.c);
+  }
+  if (event == 'UE') { // Update Elements
+    updateElements(payload)
   }
 
   // Rino can NOT change diretion while jumping (or dropping) or dashing.
@@ -98,6 +99,12 @@ self.onmessage = ({data: [event, payload]})=> {
   }
 }
 
+function updateElements(newElementList, updatePlayer) {
+  elements = newElementList;
+  if (updatePlayer) rino = elements.find(el => el.P); // P==truish identifies the player.
+  else elements[elements.findIndex(el => el.P)] = rino;
+}
+
 /** Jump stage 3: rino is off ground with horizontal body. */
 function rinoJumpReachedHighestY(userStopsJump) {
   rino.j = 3;
@@ -137,7 +144,7 @@ function rinoIsGrounded(someRino) {
   let pawFrontX = someRino.x + 2 * someRino.r
   let pawBackLanded = pawFrontLanded = 0;
   for (const el of elements) {
-    if (el.z == rino.z) {
+    if (el.z == someRino.z) {
       pawBackLanded ||= (el.K=='F' || el.K=='O') &&
         pawBackX > el.L && pawBackX < el.R &&
         someRino.B >= el.T && someRino.B < el.T+.7;
@@ -146,7 +153,7 @@ function rinoIsGrounded(someRino) {
         someRino.B >= el.T && someRino.B < el.T+.7;
     }
     if (pawBackLanded && pawFrontLanded) {
-      rino.y = el.T - 3;
+      someRino.y = el.T - 3;
       return 1;
     }
   }
@@ -184,10 +191,10 @@ function loopInteration() {
   if (tic%10==0 && rinoDashEnergy < 150 && dashEnabled) rinoDashEnergy++;
 
   if (rino.D) { // Dashing
-    rino.vx = .42 * rino.r;
+    rino.vx = .56 * rino.r;
     if (rino.j == 2) {
-      rino.vx = .3 * rino.r;
-      rino.vy = -.3;
+      rino.vx = .4 * rino.r;
+      rino.vy = -.4;
     } // 45deg dash: up-forward straight line.
     else rino.vy = 0; // Horizontal dash: straight line, no gravity.
     if (rinoDashEnergy > 0) rinoDashEnergy--;
@@ -195,51 +202,61 @@ function loopInteration() {
   }
   else if (rino.w) {
     if (rinoSpeed < 2) rinoSpeed += .005;
-    rino.vx = .07 * rino.r * rinoSpeed;
   }
   else {
     rinoSpeed = 1;
-    rino.vx = 0;
   }
-  rino.x += rino.vx;
-
-  if (!rino.D && rino.j==1) {
-    rino.vy -= .02;
-  }
-  else if (!rino.D && rino.j && rino.vy<.5) {
-    rino.vy += .015;
-  }
-
-  /* * * BEGIN Update Positions * * */
-  rino.y += rino.vy;
-  rino.L = rino.x+rino.r-7;
-  rino.R = rino.x+rino.r+7;
-  rino.T = rino.y-3;
-  rino.B = rino.y+3;
-  // Update objects position.
-  for (let i=0; e1=elements[i]; i++) if (e1.K=='O') {
-    e1.vx *= .9;
-    e1.x += e1.vx;
-    e1.y += e1.vy;
-  }
-  /* * * END Update Positions * * * */
 
   /* * * BEGIN colision test and update status and positions * * */
-  /** @member {boolean} f - rino in foor = grounded */
-  rino.f = !!rinoIsGrounded(rino);
-  if (!rino.D) {
-    if (rino.vy && rino.f) {
-      rino.vy = 0;
-      console.log('CHÃO');
-      rino.j = 0;
-    } else {
-      // As patas devem tocar o topo de um elemento de chão (K:'F' ou 'O');
-      // sem apoio em alguma pata e fora do salto, o rino entra em queda:
-      if (!rino.j && !rino.f) rino.j = 4;
-    }
-  }
-
   for (let i=0; e1=elements[i]; i++) if (e1.K=='B' || e1.K=='O') {
+    /* * * BEGIN Update Positions * * */
+    if (e1.S=='R') { // It is a Rino!
+      if (!e1.D) {
+        // Compute Jump
+        if (e1.j==1) {
+          e1.vy -= .02;
+        }
+        else if (e1.j && e1.vy<.5) {
+          e1.vy += .015;
+        }
+        // Compute Walk
+        if (e1.w) {
+          e1.vx = .07 * e1.r * ( e1.P ? rinoSpeed : 1 );
+        }
+        else {
+          e1.vx = 0;
+        }
+      }
+      e1.x += e1.vx;
+      e1.y += e1.vy;
+      e1.L = e1.x+e1.r-7;
+      e1.R = e1.x+e1.r+7;
+      e1.T = e1.y-3;
+      e1.B = e1.y+3;
+      /** @member {boolean} f - rino in floor = grounded */
+      e1.f = !!rinoIsGrounded(e1);
+      if (!e1.D) {
+        if (e1.vy && e1.f) {
+          e1.vy = 0;
+          console.log('CHÃO', e1.P, e1.z);
+          e1.j = 0;
+        } else {
+          // As patas devem tocar o topo de um elemento de chão (K:'F' ou 'O');
+          // sem apoio em alguma pata e fora do salto, o rino entra em queda:
+          if (!e1.j && !e1.f) e1.j = 4;
+        }
+      }
+    }
+    if (e1.K=='O') { // Update object positions
+      e1.vx *= .9;
+      e1.x += e1.vx;
+      e1.y += e1.vy;
+      e1.L = e1.x - e1.w/2;
+      e1.R = e1.x + e1.w/2;
+      e1.T = e1.y - e1.h/2;
+      e1.B = e1.y + e1.h/2;
+    }
+    /* * * END Update Positions * * * */
     // Enforce gravity over objects:
     if (e1.K=='O' && e1.vy<.5) e1.vy += .01;
     // Test pair colisions
@@ -270,14 +287,7 @@ function loopInteration() {
         }
       }
     }
-    if (e1.K == 'O') { // Update object klass
-      e1.L = e1.x - e1.w/2;
-      e1.R = e1.x + e1.w/2;
-      e1.T = e1.y - e1.h/2;
-      e1.B = e1.y + e1.h/2;
-    }
   }
-
   /* * * END colision test * * * * * * * * * * * * * * * * * * * */
 
   // Update elements state to the main thread, allowing canvas update:

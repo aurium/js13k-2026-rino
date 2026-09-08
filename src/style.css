@@ -27,6 +27,13 @@ body {
   width: 80vw;
   height: 40vw;
   filter: drop-shadow(0 0 1vw #000) drop-shadow(1vw 1vw 2vw #000);
+  transition: 2s transform;
+  .c0 & {
+    transform: translate(-25%,15%) rotate(-20deg);
+  }
+  .c99 & {
+    transform: rotate(-15deg);
+  }
 }
 
 canvas {
@@ -56,7 +63,7 @@ canvas {
   }
 }
 
-#De {
+#De { /* Dash energy */
   left: 1em;
   bottom: 1em;
   padding: 2px;
@@ -84,6 +91,21 @@ canvas {
   }
   to {
     background-position: 0 -78px;
+  }
+}
+
+#rt { /* Retry button */
+  bottom: 200vh;
+  right: 5em;
+  color: #000;
+  font: 2em cursive;
+  text-decoration: underline;
+  cursor: pointer;
+  opacity: 0;
+  transition: 9s 2s opacity;
+  .c99 & {
+    bottom: 4em;
+    opacity: 1;
   }
 }
 

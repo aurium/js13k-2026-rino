@@ -6,7 +6,8 @@ const log = console.log;
 let { PI:halfTurn, abs, sqrt, cos, sin, floor } = Math;
 
 let
-  curChapterNum,
+  lastChapterNum,
+  curChapterNum = 0,
   curChapter,
   chapters = [],
   elements,
@@ -24,6 +25,10 @@ let
   rinoLife = 0,
   rainbow = [], // The dash's glitter rainbow
   worker = new Worker('worker.js');
+
+function transmissibleElements() {
+  return elements.map(el => ({ ...el, d:0 }));
+}
 
 function disableInput(v=1) {
   rino.w = 0;
@@ -68,7 +73,7 @@ function writeHist() {
   ctx.textAlign = curChapter.h.p ? 'right' : 'left';
   ctx.font = `bold ${2*unt}px cursive`;
   curChapter.h.t.split('\n').map((s, i)=>
-    ctx.fillText(s, (curChapter.h.p ? 78 : 2)*unt, (4+i*2)*unt)
+    ctx.fillText(s, (curChapter.h.p ? 77 : 3)*unt, (4+i*2)*unt)
   );
 }
 
@@ -96,22 +101,21 @@ function getCtx(canvas) {
     ctx.fiRt(x - camera.x, y - camera.y, w, h);
     ctx.stRt(x - camera.x, y - camera.y, w, h);
   }
-  ctx.C = (cx,cy,r, strokeStyle, fillStyle)=> {
-    ctx.strokeStyle = '#'+strokeStyle;
+  ctx.C = (cx,cy,r, fillStyle)=> {
     ctx.fillStyle = fillStyle[0]=='h' ? fillStyle : '#'+fillStyle;
     ctx.beginPath();
     ctx.ellipse(untZ(cx - camera.x), untZ(cy - camera.y), untZ(r), untZ(r), 0, 0, oneTurn);
     ctx.closePath();
     fillStyle && ctx.fill();
-    strokeStyle && ctx.stroke();
+    // strokeStyle && ctx.stroke();
   }
   return ctx;
 }
 
-function style(strokeStyle='000', lineWidth=.2, fillStyle='AAA') {
+function style(fillStyle='AAA', strokeStyle='000', lineWidth=.2) {
   ctx.strokeStyle = '#'+strokeStyle;
   ctx.lineWidth = lineWidth * unt * sqrt(.75+drawingPlanZ/4);
-  ctx.fillStyle = '#'+fillStyle;
+  ctx.fillStyle = fillStyle[0]=='h' ? fillStyle : '#'+fillStyle;
   ctx.lineJoin = 'round';
 }
 
@@ -122,3 +126,5 @@ function mkPath(...p) {
     untZ(i%2==0 ? (v-camera.x) : (v-camera.y))
   ).join(''))
 }
+
+rt.onclick = ()=> nextChapter(lastChapterNum);

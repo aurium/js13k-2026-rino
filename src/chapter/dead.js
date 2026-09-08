@@ -1,10 +1,11 @@
-let dieScale = 1, dieRotate = 0, dieRotateLimit = 0, dieIncMult = 0;
+let dieScale, dieRotate, dieRotateLimit, dieIncMult;
 
 chapters[99] = {
   /** Title */
   t: `Rino dies.`,
   /** Start */
   s() {
+    dieScale = 1, dieRotate = 0, dieRotateLimit = 0, dieIncMult = 0;
     let r = mkPlayer(0,0,1);
     r.a = -limJumpAngle*.75;
     /** Elements */
@@ -26,12 +27,12 @@ chapters[99] = {
     ctx.sae();
     ctx.scale(dieScale, dieScale);
     ctx.rotate(dieRotate);
-    ctx.C(0,0,dieScale*3, 'C005', 'C00');
-    ctx.C(4,-2,dieScale*2, 'C005', 'C00');
+    ctx.C(0,0,dieScale*3, 'C00');
+    ctx.C(4,-2,dieScale*2, 'C00');
   },
   T2(z) {
     if (z>1) return;
-    ctx.C(2,-3.9,dieScale*.7, 'C005', 'C00');
+    ctx.C(2,-3.9,dieScale*.7, 'C00');
     ctx.ree();
   }
 }

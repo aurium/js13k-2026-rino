@@ -32,7 +32,7 @@ while read line; do
   else
     echo "$line"
   fi
-done > ../dist/index.html
+done | minify --html > ../dist/index.html
 
 #rm ../dist/app.min.js
 

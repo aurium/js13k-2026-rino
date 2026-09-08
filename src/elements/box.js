@@ -8,7 +8,7 @@ const ClassBox = (x,y,w,h,z,c)=> ({
   /** Draw */
   d() {
     let { L, R, T, B } = this;
-    style('000', .2, c);
+    style(c);
     ctx.Q(L, T, R-L, B-T);
   }
 })

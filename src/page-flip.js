@@ -1,6 +1,10 @@
 let flippingPage = 0;
 
-const nextChapter = ()=> {
+const nextChapter = (num)=> {
+  if (curChapterNum!=99) lastChapterNum = curChapterNum;
+  rt.textContent = 'Retry chapter '+lastChapterNum;
+  curChapterNum = num || curChapterNum+1;
+  document.documentElement.className = 'c'+curChapterNum;
   flippingPage = 1;
   disableInput(1);
   curChapter = chapters[curChapterNum];
@@ -13,7 +17,7 @@ const nextChapter = ()=> {
   elements = curChapter.e;
   worker.postMessage(['NC', {
     c: curChapterNum,
-    e: elements.map(el => ({ ...el, d:0 }))
+    e: transmissibleElements()
   }]); // Notify new Chapter
 
   oldChapterCanvas = chapterCanvas;

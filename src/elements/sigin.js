@@ -2,6 +2,8 @@
 const ClassSign = (x,y,text,z=1)=> ({
   K: 'S', // Klass: Sign
   B: y,
+  L: x-2,
+  R: x+2,
   z,
   /** Draw */
   d() {

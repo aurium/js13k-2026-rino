@@ -1,4 +1,5 @@
-const ClassRino = (x,y,z,S=[])=> {
+const ClassRino = (x,y,z,C=66,id)=> {
+  log('RINO ID', id, z)
 /** Instance only data that is not shared with worker */
 const unsharedMemory = {
   /** @member {number} ln - the last now(). */
@@ -8,11 +9,13 @@ const unsharedMemory = {
 };
 return {
   K: 'B', // Klass: Bio Being
+  S: 'R', // Species: Rino
+  id,
   x, y, z,
+  L: x-6,
+  R: x+8,
   vx: 0,
   vy: 0,
-  /** Style */
-  S,
   /** Walking */
   w: 0,
   /** Speed Multiplier */
@@ -86,23 +89,23 @@ return {
     if (D && this.P) {
       // ['F00', 'F70', 'FE0', '0E0', '0AF', 'A4F'].map((color, dashY)=> {
       [0, 30, 60, 120, 200, 280].map((color, dashY)=> {
+        let openY = (dashY-3)/100+Math.random()/100;
         rainbow.push({
           ...((j==1||j==2) ? {
             x: x-6*rino.r,  y: y+1+dashY/2,
-            vx: -.15*rino.r+(dashY-3)/100*rino.r, vy:.15+(dashY-3)/200+Math.random()/100,
+            vx: -.15*rino.r+(dashY-3)/100*rino.r, vy:.15+openY,
           } : {
-            x: x-5*rino.r,  y: y-2+dashY/2,
-            vx: -.2*rino.r, vy:(dashY-3)/200+Math.random()/100,
+            x: x-5*rino.r + Math.random()-.5,  y: y-2+dashY/2,
+            vx: -.2*rino.r, vy: openY,
           }),
           r: .2+Math.random()/3,
           c: `hsl(${color} 100 ${35+Math.random()*30})`,
-          // c: color+'C',
           t:0
         });
       });
     }
 
-    style('000', .2, '888');
+    style(`hsl(0 0 ${C*.8})`);
     // hiden Back Paw
     let path = mkPath(
       ...rotatePoint(-6,-1), ...paw(-6,0), ...rotatePoint(-3.5,-1)
@@ -116,7 +119,7 @@ return {
     ctx.fill(path);
     ctx.stroke(path);
 
-    style(...S);
+    style(`hsl(0 0 ${C})`);
     // Trunk
     path = mkPath(
       // Back
@@ -139,11 +142,8 @@ return {
     );
     ctx.fill(path);
     ctx.stroke(path);
-    // Eye
-    ctx.C(...rotatePoint(6+t/2, -t), .3, null, S[0]||'000');
 
     // visible Back Paw
-    style(...S);
     path = mkPath(
       ...rotatePoint(-6,-1), ...paw(-6,.5), ...rotatePoint(-3,-1)
     );
@@ -155,8 +155,12 @@ return {
     );
     ctx.fill(path);
     ctx.stroke(path);
+
+    // Eye
+    ctx.C(...rotatePoint(6+t/2, -t), .3, '000');
+
     // Colision box:
-    // style('0F08', .2, '00F4');
+    // style('00F4', '0F08', .2);
     // ctx.Q(L, T, R-L, B-T);
   }
 }
