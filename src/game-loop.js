@@ -62,10 +62,11 @@ function initGame() {
         }
         rainbow = rainbow.filter(g => g.t++ < 400);
       }
+      let camL = camera.x - 40*z, camR = camera.x + 40*z;
       for (const el of elements.filter(el=>el.z==z).sort(sortElementsForPrinting)) {
         // Draw the element, only if it is visible:
-        if (el.L < camera.x+10*z || el.R > camera.x-10*z) el.d(tic);
-        else log('Ignore',el.K, el.L)
+        if (el.L < camR && el.R > camL) el.d(tic);
+        //else log('Ignore',el.K, el.id||' ')
       }
       ctx.ree();
       curChapter.T2?.(z); // Chapter specific drawings, After Z level.

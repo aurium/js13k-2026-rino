@@ -10,7 +10,7 @@ const ClassSign = (x,y,text,z=1)=> ({
     style();
     ctx.textAlign = 'center';
     ctx.font = `bold ${unt}px sans-serif`;
-    let w = ctx.measureText(text).width / unt + 1;
+    let w = ctx.measureText(text).width / unt + z;
     ctx.sae();
     ctx.tre(x-camera.x,y-camera.y);
     ctx.rotate(.2);

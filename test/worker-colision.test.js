@@ -37,7 +37,7 @@ function loadWorker() {
 // Klasses: 'B' = ser vivo, 'F' = floor (chão, só pés), 'W' = wall (só colisão X),
 // 'O' = object (empurra os dois em sentidos contrários).
 function newRino(overrides = {}) {
-  return { K: 'B', x: 0, y: 0, z: 1, r: 1, w: 0, j: 0, P: 1, ...overrides };
+  return { K: 'B', S: 'R', x: 0, y: 0, z: 1, r: 1, w: 0, j: 0, P: 1, ...overrides };
 }
 
 function floor(L = -100, R = 100, T = FLOOR_T, B = FLOOR_B, z = 1) {
@@ -186,6 +186,23 @@ describe("rinoIsGrounded", () => {
     const { rino, rinoIsGrounded } = loaded([newRino()]);
     assert.ok(!rinoIsGrounded(rino));
   });
+
+  it("um NPC apoiado não altera o y do player (cada rino apoia no próprio piso)", () => {
+    const { loopInteration, self } = loadWorker();
+    // Player em y=0 sobre o piso A (T=3). NPC em y=7 sobre o piso B (T=10).
+    // Ambos no mesmo z: se o cálculo usasse referências globais, o apoio do
+    // NPC puxaria o player, que perdiaria o próprio chão (bug do cap. 01).
+    const player = newRino();
+    const npc = newRino({ x: 0, y: 7, P: 0, vy: 0 });
+    self.onmessage({
+      data: ['NC', { c: 1, e: [floor(), floor(-100, 100, 10, 100), player, npc] }],
+    });
+
+    loopInteration();
+    assert.equal(player.y, 0, "o player continua apoiado no próprio piso A");
+    assert.equal(npc.y, 7, "o NPC apoia no piso B (y = T - 3)");
+    assert.equal(player.j, 0, "o player não entrou em queda");
+  });
 });
 
 describe("colisão horizontal", () => {
@@ -242,17 +259,18 @@ describe("colisão horizontal", () => {
   describe("objeto K:'O'", () => {
     it("empurra o rino e o objeto em sentidos opostos (e1 x e2 em dois passos do loop)", () => {
       const { loopInteration, self } = loadWorker();
-      const rino = newRino();
-      // caixa explícita L=2,R=6,T=-2,B=2 para o objeto colidir já no 1º tick
-      // (sem L/R/T/B ele só materializa a caixa DEPOIS da própria iteração).
+      // Novamente com L/R/T/B pré-definidos nos DOIS corpos: no worker atual as
+      // caixas são (re)calculadas dentro do loop, na ordem do array; se o box
+      // for processado antes do rino, o rino ainda não tem caixa neste tick.
+      const rino = newRino({ L: -6, R: 8, T: -3, B: 3, vy: 0 });
       const box = { K: 'O', x: 4, y: 0, w: 4, h: 4, z: 1, vx: 0, vy: 0, L: 2, R: 6, T: -2, B: 2 };
       self.onmessage({ data: ['NC', { c: 1, e: [floor(), box, rino] }] });
 
       loopInteration();
       // box como e1: inside=6, vec=+1            => +7/9 (para a direita)
-      // rino como e1 (caixa já atualizada): inside=47/9, vec=-1 => -56/81
+      // rino como e1 (caixa do box já atualizada): inside=6, vec=-1 => -7/9
       assert.ok(Math.abs(box.x - (4 + 7 / 9)) < 1e-12, "objeto empurrado para a direita");
-      assert.ok(Math.abs(rino.x - (-56 / 81)) < 1e-12, "rino empurrado para a esquerda");
+      assert.ok(Math.abs(rino.x - (-7 / 9)) < 1e-12, "rino empurrado para a esquerda");
     });
 
     it("objeto se afasta e os dois estabilizam após deixarem de se sobrepor", () => {

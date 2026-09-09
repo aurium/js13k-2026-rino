@@ -1,5 +1,4 @@
 const ClassRino = (x,y,z,C=66,id)=> {
-  log('RINO ID', id, z)
 /** Instance only data that is not shared with worker */
 const unsharedMemory = {
   /** @member {number} ln - the last now(). */

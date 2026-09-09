@@ -23,7 +23,7 @@ const ClassFloor = (L,R,T,B,z=1,k='G')=> ({
     // Set the fill style and draw a rectangle
     ctx.fillStyle = gradient;
 
-    let w = 5-z/2; // Grass Width
+    let w = 4.5-z/2; // Grass Width
     let pathGrass = Array.from({length: (R-L)*w+1}, (_,i) => {
       let h = ( i%9 + i%7 ) / 15 // Grass Heigth Increment
       return i%2==0 ? [L+i/w,T+.2] :
