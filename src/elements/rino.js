@@ -104,7 +104,7 @@ return {
       });
     }
 
-    style(`hsl(0 0 ${C*.8})`);
+    style(C*.8);
     // hiden Back Paw
     let path = mkPath(
       ...rotatePoint(-6,-1), ...paw(-6,0), ...rotatePoint(-3.5,-1)
@@ -118,7 +118,7 @@ return {
     ctx.fill(path);
     ctx.stroke(path);
 
-    style(`hsl(0 0 ${C})`);
+    style(...(C.at ? C : [C]));
     // Trunk
     path = mkPath(
       // Back
@@ -156,7 +156,7 @@ return {
     ctx.stroke(path);
 
     // Eye
-    ctx.C(...rotatePoint(6+t/2, -t), .3, '000');
+    ctx.C(...rotatePoint(6+t/2, -t), .3, C.at ? C[1] : '000');
 
     // Colision box:
     // style('00F4', '0F08', .2);

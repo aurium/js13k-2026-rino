@@ -185,7 +185,7 @@ function loopInteration() {
 
   if (tic%10==0 && rino.y > 30 && rinoLife > 0) rinoLife--;
 
-  dashEnabled ||= !(curChapter==1 && (rino.x < 10));
+  dashEnabled ||= !(curChapter==1 && (rino.x < 90));
   if (rinoDashEnergy==-1 && dashEnabled) rinoDashEnergy=150;
 
   if (tic%10==0 && rinoDashEnergy < 150 && dashEnabled) rinoDashEnergy++;
@@ -294,7 +294,7 @@ function loopInteration() {
   rino.l = rinoLife;
   rino.s = rinoSpeed;
   rino.De = rinoDashEnergy;
-  postMessage(['E', elements]);
+  postMessage(['E', { c:curChapter, e:elements }]);
   if (rinoLife == 0) postMessage(['NC', 99]);
 }
 

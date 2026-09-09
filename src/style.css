@@ -29,10 +29,10 @@ body {
   filter: drop-shadow(0 0 1vw #000) drop-shadow(1vw 1vw 2vw #000);
   transition: 2s transform;
   .c0 & {
-    transform: translate(-25%,15%) rotate(-20deg);
+    transform: translate(-25%,10%) rotate(-15deg);
   }
   .c99 & {
-    transform: rotate(-15deg);
+    transform: rotate(-10deg);
   }
 }
 

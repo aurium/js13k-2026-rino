@@ -24,11 +24,15 @@ worker.onmessage = ({data: [event, payload]})=> {
     setTimeout(cover.onclick, 1); // AUTO START for DEV MODE!
   }
   if (event=='E') { // Update Elements
-    payload.forEach((el, i)=> {
-      // Update element, without replacing draw func and angle:
-      elements[i] = { ...el, d:elements[i].d, a:elements[i].a };
-      if (el.P) rino = elements[i];
-    })
+    if (payload.c == curChapterNum) {
+      payload.e.forEach((el, i)=> {
+        if (!elements[i]) log('OPS',elements,i,el);
+        // Update element, without replacing draw func and angle:
+        elements[i] = { ...el, d:elements[i].d, a:elements[i].a };
+        if (el.P) rino = elements[i];
+      })
+    }
+    else log('Ignore update from deprecated chapter', payload.c);
   }
   if (event=='NC') { // New Chapter
     // if (payload) curChapterNum = payload;

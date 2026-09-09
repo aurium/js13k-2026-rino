@@ -19,7 +19,7 @@ cover.r = ()=> {
   ctx.fillText("Search for Love", cover.width*.75+unt/6, cover.height*.55+unt/5);
   ctx.strokeText("Search for Love", cover.width*.75, cover.height*.55);
 
-  ClassRino(60, 30, 1, ['300', .2, '60180A']).d();
+  ClassRino(60, 30, 1, ['60180A', '300']).d();
 
   ctx.lineWidth = unt/5;
   const cbm = 2*unt // Cover Border Margin
@@ -27,7 +27,6 @@ cover.r = ()=> {
   ctx.setLineDash([unt/2]);
   ctx.roundRect(cover.width/2+cbm, cbm, cover.width/2-cbm*2, cover.height-cbm*2, cbm);
   ctx.stroke();
-
 }
 
 setZoom(1);

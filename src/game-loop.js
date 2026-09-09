@@ -1,16 +1,16 @@
+let lastTime, tic = 0;
+
 function initGame() {
-
-  //curChapterNum = 1;
   nextChapter();
+  lastTime = performance.now()
+  setInterval(updateCanvas, 16);
+}
 
-  let lastTime = performance.now(),
-      tic = 0;
-
-  setInterval(() => {
+function updateCanvas() {
     tic++;
     if (tic%20 == 0) {
-      const now = performance.now();
-      const fps = 20_000 / (now - lastTime)
+      let now = performance.now();
+      fps = 20_000 / (now - lastTime)
       dbg.textContent = `FPS: ${fps.toFixed(1)} - `
                       + `Zoom: ${zoom} - `
                       + `Size: ${chapterCanvas.width}x${chapterCanvas.height} - `
@@ -75,7 +75,6 @@ function initGame() {
     ctx.ree();
     writeTitle(ctx);
     writeHist();
-  }, 16);
 }
 
 function sortElementsForPrinting(a, b) {

@@ -1,12 +1,16 @@
 let flippingPage = 0;
 
 const nextChapter = (num)=> {
+  flippingPage = 1;
+  disableInput(1);
+
+  if (zoom > 1) setZoom(zoom - 1);
+  if (curChapterNum) updateCanvas();
+
   if (curChapterNum!=99) lastChapterNum = curChapterNum;
   rt.textContent = 'Retry chapter '+lastChapterNum;
   curChapterNum = num || curChapterNum+1;
   document.documentElement.className = 'c'+curChapterNum;
-  flippingPage = 1;
-  disableInput(1);
   curChapter = chapters[curChapterNum];
   log(`Starting Chapeter ${curChapterNum}:`, curChapter.t);
   camera = 0;

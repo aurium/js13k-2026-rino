@@ -6,6 +6,7 @@ const log = console.log;
 let { PI:halfTurn, abs, sqrt, cos, sin, floor } = Math;
 
 let
+  fps = 60,
   lastChapterNum,
   curChapterNum = 0,
   curChapter,
@@ -115,7 +116,7 @@ function getCtx(canvas) {
 function style(fillStyle='AAA', strokeStyle='000', lineWidth=.2) {
   ctx.strokeStyle = '#'+strokeStyle;
   ctx.lineWidth = lineWidth * unt * sqrt(.75+drawingPlanZ/4);
-  ctx.fillStyle = fillStyle[0]=='h' ? fillStyle : '#'+fillStyle;
+  ctx.fillStyle = fillStyle.toFixed ? `hsl(0 0 ${fillStyle})` : '#'+fillStyle;
   ctx.lineJoin = 'round';
 }
 
