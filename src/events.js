@@ -39,4 +39,7 @@ worker.onmessage = ({data: [event, payload]})=> {
     // else curChapterNum++;
     nextChapter(payload);
   }
+  if (event=='N') { // Play Note
+    payload.forEach(args=>note(...args));
+  }
 }

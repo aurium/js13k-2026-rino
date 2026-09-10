@@ -9,8 +9,8 @@ chapters[1] = {
     this.e = [
       mkPlayer(0,-5,1),
       ClassFloor(-99,  70,   0, 15, 1),
-      ClassWall(  37,  42,   4,  8,   1, 1),
-      ClassWall(  39,  45,   2,  8.1, 1, 1),
+      ClassWall(  37,  42,   4,  8.1, 1, 1),
+      ClassWall(  39,  45,   2,  8,   1, 1),
       ClassFloor( 35, 350,   8, 15, 1),
       ClassSign(  99,8, `Find Happiness`),
       ClassSign( 160,8, `This is our land`),

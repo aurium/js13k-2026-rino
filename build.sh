@@ -7,7 +7,7 @@ test x$NO_LOG = x1 && LOG_FN=void || LOG_FN=log
 
 cd src
 
-SCRIPTS="base.js page-flip.js $(ls -1 elements/*.js) $(ls -1 chapter/*.js) cover.js events.js game-loop.js"
+SCRIPTS="base.js page-flip.js $(ls -1 elements/*.js) $(ls -1 chapter/*.js) cover.js events.js game-loop.js music.js"
 WORKER_SCRIPTS="$(ls -1 worker/*.js)"
 STYLES="style.css"
 

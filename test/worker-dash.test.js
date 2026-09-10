@@ -52,9 +52,9 @@ function loadWorker() {
 }
 
 // Klasses: 'B' = ser vivo, 'F' = floor (chão, só pés).
-// No capítulo 1 o dash só é liberado com x >= 10; x começa em 10.
+// No capítulo 1 o dash só é liberado com x >= 90; x começa em 90.
 function newRino(overrides = {}) {
-  return { K: 'B', S: 'R', x: 10, y: 0, z: 1, r: 1, w: 0, j: 0, P: 1, ...overrides };
+  return { K: 'B', S: 'R', x: 90, y: 0, z: 1, r: 1, w: 0, j: 0, P: 1, ...overrides };
 }
 
 function floor(L = -100, R = 100, T = FLOOR_T, B = 100, z = 1) {
@@ -80,7 +80,7 @@ function close(actual, expected, msg) {
   );
 }
 
-// Capítulo 1 com o rino em x >= 10: o dash é liberado e a energia salta de -1
+// Capítulo 1 com o rino em x >= 90: o dash é liberado e a energia salta de -1
 // para 150 no primeiro tique, permitindo testar sem drenar a carga.
 function setupDashing(worker, extra = []) {
   const rino = newRino();
@@ -102,14 +102,14 @@ describe("dash: evento UE (Update Elements) preserva o rino", () => {
 
     push(worker, 'Rj1');
     assert.equal(rino.j, 1, "o salto age sobre o rino original, não o da lista nova");
-    assert.equal(rino.x, 10, "posição original preservada (não a do rino novo)");
+    assert.equal(rino.x, 90, "posição original preservada (não a do rino novo)");
 
     worker.loopInteration();
     assert.equal(rino.vy, -0.02, "impulso aplicado no rino original");
 
     // A lista que o loop posta guarda a MESMA instância do rino.
     const ePost = worker.posted.findLast(m => m[0] == 'E');
-    assert.ok(ePost[1].find(el => el.P) === rino, "player da lista é o rino original");
+    assert.ok(ePost[1].e.find(el => el.P) === rino, "player da lista é o rino original");
   });
 
   it("UE permite posições novas (teleporte/arraste) sem perder o controle", () => {
@@ -193,7 +193,7 @@ describe("dash: eventos Rd1/Rd0 e energia", () => {
     assert.equal(rino.De, 2);
   });
 
-  it("capítulo 1: dash só é liberado com x >= 10", () => {
+  it("capítulo 1: dash só é liberado com x >= 90", () => {
     const worker = loadWorker();
     const rino = newRino({ x: 5 });
     startChapter(worker, 1, [floor(), rino]);
@@ -201,7 +201,7 @@ describe("dash: eventos Rd1/Rd0 e energia", () => {
     worker.loopInteration();
     assert.equal(rino.De, -1); // energy desligada antes do gate
 
-    rino.x = 10;
+    rino.x = 90;
     worker.loopInteration();
     assert.equal(rino.De, 150); // gate passa e o dash liga
 

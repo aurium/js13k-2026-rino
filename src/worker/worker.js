@@ -72,6 +72,7 @@ self.onmessage = ({data: [event, payload]})=> {
 
   if (event == 'Rj1' && !rino.D && !rino.j) { // Rino wants to Jump.
     rino.j = 1; // stage 1: back paws still in the ground.
+    postMessage(['N', [[200, 1.5, 1], [300, 1.5, 1]]]);
     console.log('Jump Stage', rino.j);
     rinoJumpTimeout = setTimeout(()=> {
       rino.j = 2; // stage 2: rino is going up off ground with 45deg body and head up.
@@ -243,7 +244,10 @@ function loopInteration() {
         } else {
           // As patas devem tocar o topo de um elemento de chão (K:'F' ou 'O');
           // sem apoio em alguma pata e fora do salto, o rino entra em queda:
-          if (!e1.j && !e1.f) e1.j = 4;
+          if (!e1.j && !e1.f) {
+            e1.j = 4;
+            if (e1.P) postMessage(['N', [[300, .5, 1], [150, .5, 1]]]);
+          }
         }
       }
     }
