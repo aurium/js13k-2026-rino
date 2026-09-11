@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+echo '
+==================================  BUILDING... =================================='
+
 test -e dist && rm -r dist || true
 mkdir dist
 

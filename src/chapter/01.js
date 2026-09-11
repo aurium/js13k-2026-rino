@@ -28,7 +28,7 @@ chapters[1] = {
       ClassRino(-25, -13, 2, 60, 1), // NPC id:1
 
       ClassFloor(25, 80,   0, 10, 2),
-      ClassWall( 30, 40,  -5,  0, 2, 1),
+      isFirefox || ClassWall( 30, 40,  -5,  0, 2, 1),
       ClassWall( 45, 60, -10,  0, 2, 1),
       ClassWall( 70, 76,  -6,  0, 2, 1),
       ClassSign(74,-6, `Caution!`, 2),
@@ -41,14 +41,14 @@ chapters[1] = {
       ClassFloor(-20, 40, -40, -25, 4),
       ClassRino(-4, -300, 4),
       {...ClassRino(15, -43, 4, 50), r:-1},
-      ClassFloor( 80, 99, -44, -10, 4),
+      isFirefox || ClassFloor( 80, 99, -44, -10, 4),
 
-      ClassFloor(60, 100, -65, -40, 5),
+      isFirefox || ClassFloor(60, 100, -65, -40, 5),
 
       ClassFloor(15, 50, -85, -65, 6),
-    ];
+      ].filter(el=>el);
     for (let z=2; z<6; z++) {
-      for (let x=90+z*3+Math.random()*10; x<270; x+=10+Math.random()*15) {
+      for (let x=90+z*3+Math.random()*(isFirefox?40:10); x<270; x+=10+Math.random()*(isFirefox?40:15)) {
         let x2 = x + 20 + Math.random()*20;
         let y = -((1-z)**2)*5+4 + Math.random()*z*2;
         this.e.push(ClassFloor(x, x2, y, (y/2)+10, z));

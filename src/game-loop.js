@@ -54,7 +54,6 @@ function updateCanvas() {
       ctx.scale(1/(.75+z/4), 1/(.75+z/4));
       drawingPlanZ = z;
       if (z == rino.z) {
-        // log('Gliter', rainbow.length, rainbow[28]?.x.toFixed(2), rainbow[28]?.y.toFixed(2), rainbow[28]?.c)
         for (let glitter of rainbow) {
           glitter.x += glitter.vx;
           glitter.y += glitter.vy;

@@ -24,7 +24,10 @@ let
   inputDisabled = 1,
   rino = {},
   rinoLife = 0,
+  dashing,
+  dashSoundFinish,
   rainbow = [], // The dash's glitter rainbow
+  isFirefox = window.mozInnerScreenX,
   worker = new Worker('worker.js');
 
 function transmissibleElements() {

@@ -39,7 +39,7 @@ worker.onmessage = ({data: [event, payload]})=> {
     // else curChapterNum++;
     nextChapter(payload);
   }
-  if (event=='N') { // Play Note
-    payload.forEach(args=>note(...args));
+  if (event=='S') { // Play Sound
+    payload.forEach(args=>playSound(...args)(args[2]));
   }
 }

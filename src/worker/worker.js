@@ -35,7 +35,10 @@ let rino,
   rinoPawFrontLanded,
   rinoLife = 1,
   elements,
-  curChapter;
+  curChapter,
+  touchFloorSound = [
+    [300, 200, .2, 1], [150, 100, .2, 1], [100, 80, .2, 1]
+  ];
 
 /**
  * Listen for events from main thread.
@@ -72,7 +75,9 @@ self.onmessage = ({data: [event, payload]})=> {
 
   if (event == 'Rj1' && !rino.D && !rino.j) { // Rino wants to Jump.
     rino.j = 1; // stage 1: back paws still in the ground.
-    postMessage(['N', [[200, 1.5, 1], [300, 1.5, 1]]]);
+    postMessage(['S',
+      [[200, 300, .8, 1], [300, 400, .8, 1]]
+    ]);
     console.log('Jump Stage', rino.j);
     rinoJumpTimeout = setTimeout(()=> {
       rino.j = 2; // stage 2: rino is going up off ground with 45deg body and head up.
@@ -238,15 +243,19 @@ function loopInteration() {
       e1.f = !!rinoIsGrounded(e1);
       if (!e1.D) {
         if (e1.vy && e1.f) {
+          console.log('Touch Floor', e1.P, e1.z);
+          if (e1.P) postMessage(['S', touchFloorSound]);
           e1.vy = 0;
-          console.log('CHÃO', e1.P, e1.z);
           e1.j = 0;
         } else {
           // As patas devem tocar o topo de um elemento de chão (K:'F' ou 'O');
           // sem apoio em alguma pata e fora do salto, o rino entra em queda:
           if (!e1.j && !e1.f) {
+            console.log('Drop', e1.P, e1.z);
             e1.j = 4;
-            if (e1.P) postMessage(['N', [[300, .5, 1], [150, .5, 1]]]);
+            if (e1.P) postMessage(['S',
+              [[600, 400, .4, .5], [900, 600, .3, .4]]
+            ]);
           }
         }
       }
@@ -276,6 +285,7 @@ function loopInteration() {
           e1.K=='O' && (e2.K=='F' || e2.K=='O') // Obj can be above Floor or Obj.
         ) {
           if (e1.B < (e2.T+.7)) { // It is not too low. Land it.
+            if (e1.vy>.01) postMessage(['S', touchFloorSound]);
             e1.vy = 0;
             e1.y = e2.T - e1.h/2;
           }
@@ -288,6 +298,9 @@ function loopInteration() {
           let inside = Math.min(e2.R-e1.L, e1.R-e2.L);
           let vec = Math.sign(e1.x - e2.x);
           e1.x += (inside * vec + vec)/9;
+          if (e1.P && tic%3==0) postMessage(['S',
+            [[350, 250, .2, e2.K=='W' ? .5 : .3]]
+          ]);
         }
       }
     }

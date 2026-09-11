@@ -14,6 +14,7 @@ function startMusic() {
 }
 
 function musicBeat() {
+  if (!mON.checked) return setTimeout(musicBeat, 99);
   // Rítmo: a melodia anda junto com o rino; no dash fica 3x mais rápida.
   const beatDuration = .1 + .1 / (rino.D ? 2 : rino.s || 1);
 
@@ -27,23 +28,31 @@ function musicBeat() {
   const frequency = noteFrequency[letter];
 
   if (frequency) { // Nota principal (sawtooth suave).
-    note(frequency, .9 * noteDuration, 0.4);
-    note(frequency * 2, .9 * noteDuration, 0.2);
+    note(frequency, .9 * noteDuration*2, 0.1);
+    note(frequency * 2, .9 * noteDuration*2, 0.05);
   }
 
   setTimeout(musicBeat, noteDuration * 1000);
 }
 
 function note(frequency, duration, volume) {
-  if (!audioContext) return;
+  playSound(frequency*.9, frequency, .1, volume)(duration);
+}
+
+function playSound(freqFrom, freqTo, delay, volume=.5) {
+  if (!audioContext) return ()=>0;
   const oscillator = audioContext.createOscillator();
   const gain = audioContext.createGain();
   const t = audioContext.currentTime;
   oscillator.type = 'sine';
-  oscillator.frequency.value = frequency;
+  oscillator.frequency.setValueAtTime(freqFrom, t);
+  oscillator.frequency.linearRampToValueAtTime(freqTo, t + delay/2);
   oscillator.connect(gain).connect(audioContext.destination);
   gain.gain.setValueAtTime(volume, t);
-  gain.gain.exponentialRampToValueAtTime(.001, t + duration);
   oscillator.start(t);
-  oscillator.stop(t + duration);
+  return (delay=.5)=> {
+    let end = audioContext.currentTime + delay;
+    gain.gain.linearRampToValueAtTime(.001, end);
+    oscillator.stop(end);
+  }
 }

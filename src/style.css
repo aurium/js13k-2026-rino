@@ -6,7 +6,7 @@ html {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  font-size: 1vw;
+  font: 1vw sans-serif;
 }
 
 * {
@@ -117,8 +117,12 @@ canvas {
   bottom: 1em;
 }
 
-#qlt {
+aside {
   position: absolute;
   right: 0;
   bottom: -3em;
+  * {
+    position: relative;
+    margin-left: 1em;
+  }
 }

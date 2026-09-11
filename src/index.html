@@ -15,10 +15,17 @@
     <b id="rt"></b>
   </p>
   <pre id="dbg"></pre>
-  <select id="qlt" onchange="setZoom(parseInt(this.value))">
-    <option value="1">Best</option>
-    <option value="2">Half</option>
-    <option value="3">Low</option>
-  </select>
+  <aside>
+    <label><input
+      id="mON"
+      type="checkbox"
+      checked
+      onclick="this.blur()"> Music</label>
+    <select id="qlt" onchange="setZoom(parseInt(this.value))">
+      <option value="1">Best</option>
+      <option value="2">Half</option>
+      <option value="3">Low</option>
+    </select>
+  </aside>
 </body>
 </html>
