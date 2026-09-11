@@ -133,6 +133,7 @@ function dashEnded() {
 }
 
 function chapterInit(c) {
+  console.log('Worker Chapter Init', c)
   rino.vy = 0;
   rinoPawBackLanded = 0;
   rinoPawFrontLanded = 0;

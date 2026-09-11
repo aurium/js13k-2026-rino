@@ -5,6 +5,7 @@ chapters[99] = {
   t: `Rino dies.`,
   /** Start */
   s() {
+    curMelody = deadMelody;
     dieScale = 1, dieRotate = 0, dieRotateLimit = 0, dieIncMult = 0;
     let r = mkPlayer(0,0,1);
     r.a = -limJumpAngle*.75;

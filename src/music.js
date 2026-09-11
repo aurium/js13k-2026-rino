@@ -1,9 +1,11 @@
 // A música acompanha o ritmo do jogo: mais rápida com rino.s ou dash (rino.D).
 
-const melodyNotes = 'B1B1C2D2B2A2B2G2B1B1A2G2E2B1B1A2R2B1B1C2D2B2A2B2G2B1B1A2G2E2B1B1A2R2D1D1D1D1E2A1A1A1A1A2G1G1G1G1G2';
-const noteFrequency = { C: 523, D: 587, E: 330, F: 349, G: 392, A: 440, B: 494 };
-
-let audioContext, musicStep = 0;
+let aliveMelody = 'B1B1C2D2B2A2B2G2B1B1A2G2E2B1B1A2R2B1B1C2D2B2A2B2G2B1B1A2G2E2B1B1A2R2D1D1D1D1E2A1A1A1A1A2G1G1G1G1G2',
+    deadMelody = 'A2B2A2G2A4R4C2B2A2G2F2E2F4R4G2A2G2F2E4R4E2D2C2B2A4',
+    curMelody = aliveMelody,
+    noteFrequency = { C: 523, D: 587, E: 330, F: 349, G: 392, A: 440, B: 494 },
+    audioContext,
+    musicStep = 0;
 
 // Descansa em silêncio até o primeiro gesto do usuário (política de autoplay).
 addEventListener('pointerdown', startMusic, { once: true });
@@ -20,12 +22,12 @@ function musicBeat() {
 
   // Lê o par nota+duração da vez (nota e duração sempre em pares).
   const pairPosition = musicStep * 2;
-  const letter = melodyNotes[pairPosition];
-  const beats = +melodyNotes[pairPosition + 1];
-  musicStep = (musicStep + 1) % (melodyNotes.length / 2);
+  const letter = curMelody[pairPosition];
+  const beats = +curMelody[pairPosition + 1];
+  musicStep = (musicStep + 1) % (curMelody.length / 2);
 
   const noteDuration = beats * beatDuration;
-  const frequency = noteFrequency[letter];
+  const frequency = noteFrequency[letter]/(rinoLife?1:2);
 
   if (frequency) { // Nota principal (sawtooth suave).
     note(frequency, .9 * noteDuration*2, 0.1);
@@ -36,7 +38,7 @@ function musicBeat() {
 }
 
 function note(frequency, duration, volume) {
-  playSound(frequency*.9, frequency, .1, volume)(duration);
+  playSound(frequency, frequency, .1, volume)(duration);
 }
 
 function playSound(freqFrom, freqTo, delay, volume=.5) {

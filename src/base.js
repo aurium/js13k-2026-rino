@@ -131,4 +131,7 @@ function mkPath(...p) {
   ).join(''))
 }
 
-rt.onclick = ()=> nextChapter(lastChapterNum);
+rt.onclick = ()=> {
+  curMelody = aliveMelody;
+  nextChapter(lastChapterNum);
+};
