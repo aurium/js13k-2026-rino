@@ -35,8 +35,8 @@ chapters[2] = {
       ClassSign(46,3, `Gather all\nyour strength.`),
       ClassSign(55,3, `↑\nThe exit\nis above.`),
 
-      ClassFloor(150, 250, -76, -60, 1),
-      ClassSign(210, -76, `U r terrific!`),
+      ClassFloor(90, 200, -76, -60, 1),
+      ClassSign(160, -76, `U r terrific!`),
     ];
     for (let z=2; z<7; z++) {
       for (let x=z*10-rnd(20)-50; x<250; x+=20+rnd(40)) {
@@ -56,7 +56,7 @@ chapters[2] = {
       else if (this.h3) this.h = 0;
       if (rino.y < -78) {
         this.h = { p:1, t:'...and they was right!' };
-        if (!flippingPage && rino.x > 200) nextChapter();
+        if (!flippingPage && rino.x > 150) nextChapter();
       }
     }
   },

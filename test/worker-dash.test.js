@@ -21,6 +21,7 @@ function loadWorker() {
   let nextId = 1;
   const sandbox = {
     console: { log() {} },
+    log: () => {},
     performance: { now: () => 0 },
     postMessage: m => posted.push(m),
     self,

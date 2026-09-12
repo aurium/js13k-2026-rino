@@ -97,17 +97,17 @@ return {
         }
         // ['F00', 'F70', 'FE0', '0E0', '0AF', 'A4F'].map((color, dashY)=> {
         [0, 30, 60, 120, 200, 280].map((color, dashY)=> {
-          let openY = (dashY-3)/100+Math.random()/100;
+          let openY = (dashY-3)/100+rnd(.01);
           rainbow.push({
             ...((j==1||j==2) ? {
               x: x-5.5*rino.r,  y: y+dashY/2,
               vx: -.15*rino.r+(dashY-3)/100*rino.r, vy:.15+openY,
             } : {
-              x: x-5*rino.r + Math.random()-.5,  y: y-2+dashY/2,
+              x: x-5*rino.r + rnd()-.5,  y: y-2+dashY/2,
               vx: -.2*rino.r, vy: openY,
             }),
-            r: .2+Math.random()/3,
-            c: `hsl(${color} 100 ${35+Math.random()*30})`,
+            r: .2+rnd(.333),
+            c: `hsl(${color} 100 ${35+rnd(30)})`,
             t:0
           });
         });

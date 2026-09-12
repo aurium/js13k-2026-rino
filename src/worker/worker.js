@@ -243,7 +243,7 @@ function loopInteration() {
           e1.vx = 0;
         }
       }
-      e1.x += e1.vx * (e1.j ? 2 : 1);
+      e1.x += e1.vx * ((e1.j&&!e1.D) ? 2 : 1);
       e1.y += e1.vy;
       e1.L = e1.x+e1.r-7;
       e1.R = e1.x+e1.r+7;

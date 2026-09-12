@@ -58,7 +58,7 @@ function updateCanvas() {
         for (let glitter of rainbow) {
           glitter.x += glitter.vx;
           glitter.y += glitter.vy;
-          ctx.C(glitter.x, glitter.y, glitter.r+Math.sqrt(glitter.t/200), glitter.c);
+          ctx.C(glitter.x, glitter.y, glitter.r+sqrt(glitter.t/200), glitter.c);
         }
         rainbow = rainbow.filter(g => g.t++ < 400);
       }

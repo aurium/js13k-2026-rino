@@ -45,11 +45,11 @@ chapters[1] = {
       ClassFloor(15, 50, -85, -65, 6),
       ].filter(el=>el);
     for (let z=2; z<6; z++) {
-      for (let x=90+z*3+Math.random()*(isFirefox?40:10); x<270; x+=10+Math.random()*(isFirefox?40:15)) {
-        let x2 = x + 20 + Math.random()*20;
-        let y = -((1-z)**2)*5+4 + Math.random()*z*2;
+      for (let x=90+z*3+rnd(isFirefox?40:10); x<270; x+=10+rnd(isFirefox?40:15)) {
+        let x2 = x + 20 + rnd(20);
+        let y = -((1-z)**2)*5+4 + rnd(z*2);
         this.e.push(ClassFloor(x, x2, y, (y/2)+10, z));
-        if (Math.random()<.05) this.e.push(ClassRino((x+x2)/2, y-3, z));
+        if (rnd()<.05) this.e.push(ClassRino((x+x2)/2, y-3, z));
         x = x2;
       }
     }

@@ -1,6 +1,6 @@
 let
   { PI:halfTurn, abs, sqrt, cos, sin, floor, min, max } = Math,
-  rnd = (len)=> Math.random()*len,
+  rnd = (len=1)=> Math.random()*len,
   fps = 60,
   lastChapterNum,
   curChapterNum = 0,
