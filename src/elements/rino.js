@@ -100,7 +100,7 @@ return {
           let openY = (dashY-3)/100+Math.random()/100;
           rainbow.push({
             ...((j==1||j==2) ? {
-              x: x-6*rino.r,  y: y+1+dashY/2,
+              x: x-5.5*rino.r,  y: y+dashY/2,
               vx: -.15*rino.r+(dashY-3)/100*rino.r, vy:.15+openY,
             } : {
               x: x-5*rino.r + Math.random()-.5,  y: y-2+dashY/2,

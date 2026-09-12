@@ -18,6 +18,7 @@ body {
   position: relative;
   width: 80vw;
   height: 40vw;
+  user-select: none;
   * {
     position: absolute;
   }
@@ -56,6 +57,8 @@ canvas {
 #life {
   right: 1em;
   bottom: .5em;
+  font-size: 1.5rem;
+  letter-spacing: -.2em;
   color: #C00;
   b {
     position: static;
@@ -66,11 +69,11 @@ canvas {
 #De { /* Dash energy */
   left: 1em;
   bottom: 1em;
-  padding: 2px;
+  border: .23em solid #000;
   width: 150px;
-  height: 14px;
+  height: 1.5em;
   border-radius: 1em;
-  background: #0007;
+  background: #0004;
   opacity: 0;
   transition: 1s;
   b {
@@ -78,7 +81,7 @@ canvas {
     transform: translateY(-50%);
     display: block;
     width: var(--v);
-    height: min(14px, var(--v));
+    height: min(1.5em, var(--v));
     border-radius: 1em;
     background: linear-gradient(21.314deg in hsl longer hue, red, red, red);
     background-size: 200px 78px;
@@ -124,5 +127,6 @@ aside {
   * {
     position: relative;
     margin-left: 1em;
+    font-size: 1em
   }
 }

@@ -11,7 +11,7 @@
     "asbuild": "yarn asbuild:debug && yarn asbuild:release",
     "test": "node --test",
     "build": "(yarn test || (zenity --error --timeout=2 --text='Test fail!' &)) && (./build.sh || (zenity --error --timeout=2 --text='Build fail!' &))",
-    "build:watch": "yarn build; while inotifywait -r -e create -e modify -e move -e delete ./src ./test; do echo; yarn build; echo; done",
+    "build:watch": "export DEV=1; yarn build; while inotifywait -r -e create -e modify -e move -e delete ./src ./test; do echo; yarn build; echo; done",
     "gen-cert": "test -e .cert.pem || openssl req -newkey rsa:2048 -new -nodes -x509 -days 999 -keyout .key.pem -out .cert.pem",
     "serve": "echo DISABLE yarn gen-cert && PORT=3333 npx serve ./dist"
   },

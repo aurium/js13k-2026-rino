@@ -1,11 +1,6 @@
-// import { add } from "../build/release.js";
-// console.log('ADD:', add(1, 2));
-
-const log = console.log;
-
-let { PI:halfTurn, abs, sqrt, cos, sin, floor } = Math;
-
 let
+  { PI:halfTurn, abs, sqrt, cos, sin, floor, min, max } = Math,
+  rnd = (len)=> Math.random()*len,
   fps = 60,
   lastChapterNum,
   curChapterNum = 0,
@@ -29,6 +24,8 @@ let
   rainbow = [], // The dash's glitter rainbow
   isFirefox = window.mozInnerScreenX,
   worker = new Worker('worker.js');
+
+window.MSG = (ev, payload)=> { worker.postMessage([ev, payload]) } // DEV ONLY
 
 function transmissibleElements() {
   return elements.map(el => ({ ...el, d:0 }));
@@ -132,6 +129,7 @@ function mkPath(...p) {
 }
 
 rt.onclick = ()=> {
+  if (flippingPage) return;
   curMelody = aliveMelody;
   nextChapter(lastChapterNum);
 };

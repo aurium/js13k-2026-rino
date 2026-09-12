@@ -6,7 +6,9 @@ echo '
 test -e dist && rm -r dist || true
 mkdir dist
 
-test x$NO_LOG = x1 && LOG_FN=void || LOG_FN=log
+test x$DEV = x1 && LOG_FN=console.log || LOG_FN=void
+test x$DEV = x1 && JS_DEV_LINE='^$'   || JS_DEV_LINE='^.*//\s*DEV\s*ONLY.*$'
+test x$DEV = x1 && HTML_DEV_LINE='^$' || HTML_DEV_LINE='\bDEV\s*ONLY\b'
 
 cd src
 
@@ -14,7 +16,7 @@ SCRIPTS="base.js page-flip.js $(ls -1 elements/*.js) $(ls -1 chapter/*.js) cover
 WORKER_SCRIPTS="$(ls -1 worker/*.js)"
 STYLES="style.css"
 
-sed -r "s/\blog\(/$LOG_FN(/g" $SCRIPTS |
+sed -r "s/\blog\(/$LOG_FN(/g; s#$JS_DEV_LINE##;" $SCRIPTS |
 terser --compress \
        --mangle toplevel \
        --output ../dist/app.js \
@@ -27,7 +29,7 @@ terser --compress \
        --source-map includeSources,url=worker.js.map
 sed -ri 's/export [^;]+//g' ../dist/worker.js
 
-cat index.html |
+grep -Ev "$HTML_DEV_LINE" index.html |
 while read line; do
   if (echo "$line" | grep -q '%STYLES%'); then
     echo ">> Building CSS..." >&2

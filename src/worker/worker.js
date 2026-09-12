@@ -38,7 +38,8 @@ let rino,
   curChapter,
   touchFloorSound = [
     [300, 200, .2, 1], [150, 100, .2, 1], [100, 80, .2, 1]
-  ];
+  ],
+  { abs, min, sign } = Math;
 
 /**
  * Listen for events from main thread.
@@ -52,14 +53,18 @@ let rino,
  */
 self.onmessage = ({data: [event, payload]})=> {
   if (event == 'NC') { // New Chapter
+    if (curChapter==99) { // It is a retry!
+      setTimeout(addLife, 1000, 5);
+    }
     curChapter = payload.c;
     updateElements(payload.e, 1);
-    console.log('Current Chapter:',curChapter);
+    log('Current Chapter:',curChapter);
     chapterInit(payload.c);
   }
   if (event == 'UE') { // Update Elements
     updateElements(payload)
   }
+  if (event == 'DE') { rinoDashEnergy = payload } // DEV ONLY
 
   // Rino can NOT change diretion while jumping (or dropping) or dashing.
   if (event == 'Rgr1' && !rino.D && (!rino.j || rino.r==1)) {
@@ -78,10 +83,10 @@ self.onmessage = ({data: [event, payload]})=> {
     postMessage(['S',
       [[200, 300, .8, 1], [300, 400, .8, 1]]
     ]);
-    console.log('Jump Stage', rino.j);
+    log('Jump Stage', rino.j);
     rinoJumpTimeout = setTimeout(()=> {
       rino.j = 2; // stage 2: rino is going up off ground with 45deg body and head up.
-      console.log('Jump Stage', rino.j);
+      log('Jump Stage', rino.j);
       rinoJumpTimeout = setTimeout(rinoJumpReachedHighestY, 300);
     }, 300);
   }
@@ -114,14 +119,14 @@ function updateElements(newElementList, updatePlayer) {
 /** Jump stage 3: rino is off ground with horizontal body. */
 function rinoJumpReachedHighestY(userStopsJump) {
   rino.j = 3;
-  console.log('Jump Stage', rino.j);
+  log('Jump Stage', rino.j);
   rinoJumpTimeout = setTimeout(rinoIsDropping, userStopsJump ? 200 : 300);
 }
 
 /** Jump stage 4: rino is dropping off ground with 45deg body and head down. */
 function rinoIsDropping() {
   rino.j = 4;
-  console.log('Jump Stage', rino.j);
+  log('Jump Stage', rino.j);
 }
 
 /** End the dash; a 45deg dash returns to jump stage 3, then stage 4 naturally. */
@@ -132,16 +137,20 @@ function dashEnded() {
   }
 }
 
+function addLife(num) {
+  rinoLife = 1;
+  for (let i=5; i<4+num; i++) setTimeout(()=> rinoLife++, i*300);
+}
+
 function chapterInit(c) {
-  console.log('Worker Chapter Init', c)
+  log('Worker Chapter Init', c)
   rino.vy = 0;
   rinoPawBackLanded = 0;
   rinoPawFrontLanded = 0;
   if (c==1) { // First Chapter
-    rinoLife = 1;
+    addLife(10);
     rinoDashEnergy = -1;
     dashEnabled = 0;
-    for (let i=5; i<14; i++) setTimeout(()=> rinoLife++, i*300);
   }
 }
 
@@ -185,12 +194,12 @@ function loopInteration() {
   if (tic%200 == 0) {
     const now = performance.now();
     const fps = 200_000 / (now - lastTime);
-    console.log(`Worker FPS: ${fps.toFixed(1)}`);
+    log(`Worker FPS: ${fps.toFixed(1)}`);
     lastTime = now;
   }
   /* * * END FPS * * * * * * * * * * * * * * * * * * */
 
-  if (tic%10==0 && rino.y > 30 && rinoLife > 0) rinoLife--;
+  if (tic%10==0 && rino.y > 40 && rinoLife > 0) rinoLife--;
 
   dashEnabled ||= !(curChapter==1 && (rino.x < 90));
   if (rinoDashEnergy==-1 && dashEnabled) rinoDashEnergy=150;
@@ -221,7 +230,7 @@ function loopInteration() {
       if (!e1.D) {
         // Compute Jump
         if (e1.j==1) {
-          e1.vy -= .02;
+          e1.vy -= .017;
         }
         else if (e1.j && e1.vy<.5) {
           e1.vy += .015;
@@ -234,7 +243,7 @@ function loopInteration() {
           e1.vx = 0;
         }
       }
-      e1.x += e1.vx;
+      e1.x += e1.vx * (e1.j ? 2 : 1);
       e1.y += e1.vy;
       e1.L = e1.x+e1.r-7;
       e1.R = e1.x+e1.r+7;
@@ -243,8 +252,8 @@ function loopInteration() {
       /** @member {boolean} f - rino in floor = grounded */
       e1.f = !!rinoIsGrounded(e1);
       if (!e1.D) {
-        if (e1.vy && e1.f) {
-          console.log('Touch Floor', e1.P, e1.z);
+        if (e1.vy>0 && e1.f) {
+          log('Touch Floor', e1.P, e1.z);
           if (e1.P) postMessage(['S', touchFloorSound]);
           e1.vy = 0;
           e1.j = 0;
@@ -252,7 +261,7 @@ function loopInteration() {
           // As patas devem tocar o topo de um elemento de chão (K:'F' ou 'O');
           // sem apoio em alguma pata e fora do salto, o rino entra em queda:
           if (!e1.j && !e1.f) {
-            console.log('Drop', e1.P, e1.z);
+            log('Drop', e1.P, e1.z);
             e1.j = 4;
             if (e1.P) postMessage(['S',
               [[600, 400, .4, .5], [900, 600, .3, .4]]
@@ -293,11 +302,12 @@ function loopInteration() {
         }
         // Test for horizontal colizions
         if (
-          (e1.K != 'B' || e2.K != 'B' ) && // Two Bio Being wont colide this way.
-          (e2.K=='W' || e2.K=='O' || e2.K=='B') // Collidible types.
+          (e1.K!='B' || e2.K!='B') && // Two Bio Being wont colide this way.
+          (e2.K=='W' || e2.K=='O' || e2.K=='B') && // Collidible types.
+          (min( abs(e1.B - e2.T), abs(e1.T - e2.B) ) > .6) // Not stacking one above other.
         ) {
-          let inside = Math.min(e2.R-e1.L, e1.R-e2.L);
-          let vec = Math.sign(e1.x - e2.x);
+          let inside = min(e2.R-e1.L, e1.R-e2.L);
+          let vec = sign(e1.x - e2.x);
           e1.x += (inside * vec + vec)/9;
           if (e1.P && tic%3==0) postMessage(['S',
             [[350, 250, .2, e2.K=='W' ? .5 : .3]]

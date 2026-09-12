@@ -11,10 +11,11 @@ function updateCanvas() {
     if (tic%20 == 0) {
       let now = performance.now();
       fps = 20_000 / (now - lastTime)
-      dbg.textContent = `FPS: ${fps.toFixed(1)} - `
-                      + `Zoom: ${zoom} - `
-                      + `Size: ${chapterCanvas.width}x${chapterCanvas.height} - `
-                      + `rino.x: ${rino.x.toFixed(2)} - camera: {x:${camera.x.toFixed(2)}}`;
+      dbg.textContent = `FPS: ${fps.toFixed(1)} - `                               // DEV ONLY
+                      + `Zoom: ${zoom} - `                                        // DEV ONLY
+                      + `Size: ${chapterCanvas.width}x${chapterCanvas.height} - ` // DEV ONLY
+                      + `rino.x: ${rino.x.toFixed(2)} - `                         // DEV ONLY
+                      + `camera: {x:${camera.x.toFixed(2)}}`;                     // DEV ONLY
       lastTime = now;
       if (!flippingPage && fps < 40) setZoom(zoom + 1)
     }

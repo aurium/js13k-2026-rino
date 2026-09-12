@@ -10,7 +10,7 @@ const ClassBox = (x,y,w,h,z=1,c=60)=> ({
     let { x, y, L, R, T, B } = this;
     style(c);
     ctx.Q(L, T, R-L, B-T);
-    let m = (w+h)/20;
+    let m = min(w,h)/10;
     let path = mkPath( L+m,T+m*2, x-m,y, L+m,B-m*2, 'z' );
     path.addPath(mkPath( R-m,T+m*2, x+m,y, R-m,B-m*2, 'z' ));
     path.addPath(mkPath( L+m*2,T+m, x,y-m, R-m*2,T+m, 'z' ));

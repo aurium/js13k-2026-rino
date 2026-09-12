@@ -7,10 +7,10 @@ chapters[1] = {
     this.h = 0;
     /** Elements */
     this.e = [
-      mkPlayer(0,-5,1),
-      ClassFloor(-99,  70,   0, 15, 1),
-      ClassWall(  37,  42,   4,  8.1, 1, 1),
-      ClassWall(  39,  45,   2,  8,   1, 1),
+      mkPlayer(0,-3.5,1),
+      ClassFloor(-99,  70,   1.5, 15, 1),
+      ClassWall(  37,  42,   5,  8.1, 1, 1),
+      ClassWall(  39,  45,   3,  8,   1, 1),
       ClassFloor( 35, 350,   8, 15, 1),
       ClassSign(  99,8, `Find Happiness`),
       ClassSign( 160,8, `This is our land`),
@@ -20,17 +20,14 @@ chapters[1] = {
       ClassSign( 230,8, `R u leaving?`),
       ClassSign( 290,8, `Good Look!`),
       ClassWall( -99, -40, -99,  0, 1),
-      // ClassBox(15,-2, 5,5),
-      // ClassBox(15,-20, 8,8,1,70),
-      // ClassBox(15,-30, 8,4,1,80),
 
       ClassFloor(-40, 20, -10, 10, 2),
       ClassRino(-25, -13, 2, 60, 1), // NPC id:1
 
-      ClassFloor(25, 80,   0, 10, 2),
-      isFirefox || ClassWall( 30, 40,  -5,  0, 2, 1),
-      ClassWall( 45, 60, -10,  0, 2, 1),
-      ClassWall( 70, 76,  -6,  0, 2, 1),
+      ClassFloor(25, 80,  -2, 10, 2),
+      isFirefox || ClassWall( 30, 40,  -5, -2, 2, 1),
+      ClassWall( 45, 60, -10, -2, 2, 1),
+      ClassWall( 70, 76,  -6, -2, 2, 1),
       ClassSign(74,-6, `Caution!`, 2),
 
       ClassFloor(-20, 10, -25, 0, 3),

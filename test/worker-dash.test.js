@@ -105,7 +105,7 @@ describe("dash: evento UE (Update Elements) preserva o rino", () => {
     assert.equal(rino.x, 90, "posição original preservada (não a do rino novo)");
 
     worker.loopInteration();
-    assert.equal(rino.vy, -0.02, "impulso aplicado no rino original");
+    assert.equal(rino.vy, -0.017, "impulso aplicado no rino original");
 
     // A lista que o loop posta guarda a MESMA instância do rino.
     const ePost = worker.posted.findLast(m => m[0] == 'E');
