@@ -10,16 +10,17 @@
 const ClassFloor = (L,R,T,B,z=1,k='G')=> ({
   K: 'F', // Klass: Floor
   L,R,T,B,z,k,
+  C:['000', '#999', '#EEE0'],
   /** Draw */
   d() {
     let t = Date.now() % 3000 / 3000;
     let v = sin(t*halfTurn*2); // Wind
-    const {L,R,T,B,z,k} = this
-    style();
+    const {L,R,T,B,z,k,C} = this
+    style(C[0]);
     const gradient = ctx.crLGt(0, T-camera.y, 0, B-camera.y);
     // Add three color stops
-    gradient.addColorStop(0, '#999');
-    gradient.addColorStop(1, '#EEE0');
+    gradient.addColorStop(0, C[1]);
+    gradient.addColorStop(1, C[2]);
     // Set the fill style and draw a rectangle
     ctx.fillStyle = gradient;
 

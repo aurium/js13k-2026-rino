@@ -22,6 +22,7 @@ let
   dashing,
   dashSoundFinish,
   rainbow = [], // The dash's glitter rainbow
+  clearColor = '#EEE',
   isFirefox = window.mozInnerScreenX,
   worker = new Worker('worker.js');
 
@@ -50,6 +51,8 @@ window.onresize = ()=> {
   unt = chapterCanvas.width / 80;
   chapterCanvas.r();
 }
+
+let getCamTargetX = ()=> rino.x + 10*rino.r;
 
 function writeTitle(ctx) {
   if (rino.x > 18) return;
@@ -116,7 +119,9 @@ function getCtx(canvas) {
 function style(fillStyle='AAA', strokeStyle='000', lineWidth=.2) {
   ctx.strokeStyle = '#'+strokeStyle;
   ctx.lineWidth = lineWidth * unt * sqrt(.75+drawingPlanZ/4);
-  ctx.fillStyle = fillStyle.toFixed ? `hsl(0 0 ${fillStyle})` : '#'+fillStyle;
+  ctx.fillStyle = fillStyle.toFixed ? `hsl(0 0 ${fillStyle})`
+                : fillStyle[0]=='h' ? fillStyle
+                : '#'+fillStyle;
   ctx.lineJoin = 'round';
 }
 

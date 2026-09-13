@@ -215,6 +215,8 @@ function loopInteration() {
     });
   }
 
+  animateFinal();
+
   if (tic%10==0 && rino.y > 40) loseLife();
 
   dashEnabled ||= !(curChapter==1 && (rino.x < 90));
@@ -383,6 +385,24 @@ function loopInteration() {
 }
 
 setInterval(loopInteration ,16);
+
+function animateFinal() {
+  if (curChapter != 6) return;
+  if (rino.x>=45) {
+    rino.x = 45;
+    rino.D = 0;
+    let narval = elements.find(e=> e.S=='N');
+    if (narval.x > 65) {
+      narval.m = 1;
+      narval.vx = -.05;
+      narval.x += narval.vx;
+    } else {
+      narval.m = 0;
+      narval.vx = 0;
+      narval.x = 65;
+    }
+  }
+}
 
 export const __rinoIsGrounded = rinoIsGrounded
 export const __loopInteration = loopInteration

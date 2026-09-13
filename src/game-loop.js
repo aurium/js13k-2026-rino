@@ -10,12 +10,13 @@ function updateCanvas() {
     tic++;
     if (tic%20 == 0) {
       let now = performance.now();
-      fps = 20_000 / (now - lastTime)
-      dbg.textContent = `FPS: ${fps.toFixed(1)} - `                               // DEV ONLY
-                      + `Zoom: ${zoom} - `                                        // DEV ONLY
-                      + `Size: ${chapterCanvas.width}x${chapterCanvas.height} - ` // DEV ONLY
-                      + `rino.x: ${rino.x.toFixed(2)} - `                         // DEV ONLY
-                      + `camera: {x:${camera.x.toFixed(2)}}`;                     // DEV ONLY
+      fps = 20_000 / (now - lastTime);
+      if (tic%120 == 0) log('Canvas FPS:', fps.toFixed(1));
+      // dbg.textContent = `FPS: ${fps.toFixed(1)} - `                               // DEV ONLY
+      //                 + `Zoom: ${zoom} - `                                        // DEV ONLY
+      //                 + `Size: ${chapterCanvas.width}x${chapterCanvas.height} - ` // DEV ONLY
+      //                 + `rino.x: ${rino.x.toFixed(2)} - `                         // DEV ONLY
+      //                 + `camera: {x:${camera.x.toFixed(2)}}`;                     // DEV ONLY
       lastTime = now;
       if (!flippingPage && fps < 40) setZoom(zoom + 1)
     }
@@ -29,7 +30,7 @@ function updateCanvas() {
     curChapter.T0?.(tic); // Chapter Tic. Allows toupdate History and objects.
 
     /* * * BEGIN Update Camara * * * * * * * * * * * * * */
-    let targetX = rino.x + 10*rino.r;
+    let targetX = getCamTargetX();
     // Camera dist X to Target = abs(camera.x - targetX)
     let multCamDistX = sqrt(abs(camera.x - targetX))*10;
     camera.x = (camera.x*multCamDistX + targetX) / (multCamDistX+1);
@@ -38,7 +39,7 @@ function updateCanvas() {
     camera.y = (camera.y*multCamDistY + targetY) / (multCamDistY+1);
     /* * * END Update Camara * * * * * * * * * * * * * * */
 
-    ctx.fillStyle = '#EEE';
+    ctx.fillStyle = clearColor;
     ctx.fillRect(0, 0, chapterCanvas.width, chapterCanvas.height);
 
     ctx.sae();
@@ -46,7 +47,7 @@ function updateCanvas() {
     for (let z=6; z>0; z--) {
       // INI drop distance fade
       drawingPlanZ = 1;
-      ctx.fillStyle = '#EEE'+(z==1 ? 7 : 3);
+      ctx.fillStyle = clearColor+(z==1 ? 7 : 3);
       ctx.fiRt(-40, -20, 80, 40);
       // END distance fade
       curChapter.T1?.(z); // Chapter specific drawings, Before Z level.
@@ -73,6 +74,7 @@ function updateCanvas() {
       // END draw elements for the current Z plan
     }
     ctx.ree();
+    curChapter.T3?.(tic); // Chapter Tic. Draw above.
     writeTitle(ctx);
     writeHist();
 }
