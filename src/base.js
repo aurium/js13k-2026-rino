@@ -1,5 +1,5 @@
 let
-  { PI:halfTurn, abs, sqrt, cos, sin, floor, min, max } = Math,
+  { PI:halfTurn, abs, sign, sqrt, cos, sin, floor, min, max } = Math,
   rnd = (len=1)=> Math.random()*len,
   fps = 60,
   lastChapterNum,
@@ -78,9 +78,9 @@ function writeHist() {
   );
 }
 
-function mkPlayer(...a) {
-  rino = ClassRino(...a);
-  rino.P = 1; // is player
+function mkPlayer(x,y,z) {
+  rino = ClassRino(x,y,z,66,0,1);
+  rino.l = rinoLife;
   return rino;
 }
 

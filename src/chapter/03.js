@@ -40,6 +40,7 @@ chapters[3] = {
       ClassFloor(240, 350, -15, 10, 1),
       ClassWall( 240, 350, -14.6, 50, 1),
     ];
+    // Background
     for (let z=2; z<7; z++) {
       for (let x=-rnd(20)-50; x<300+z*20; x+=20+rnd(isFirefox?80:40)) {
         let x2 = x + 20 + rnd(30);

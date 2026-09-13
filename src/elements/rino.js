@@ -1,4 +1,6 @@
-const ClassRino = (x,y,z,C=66,id)=> {
+const MAX_NPC_LIFE = 8;
+
+const ClassRino = (x,y,z,C=66,id,isPlayer)=> {
 /** Instance only data that is not shared with worker */
 const unsharedMemory = {
   /** @member {number} ln - the last now(). */
@@ -10,6 +12,9 @@ return {
   K: 'B', // Klass: Bio Being
   S: 'R', // Species: Rino
   id,
+  P: isPlayer,
+  /** Life */
+  l: MAX_NPC_LIFE,
   x, y, z,
   L: x-6,
   R: x+8,
@@ -27,7 +32,20 @@ return {
   a: 0,
   /** Draw */
   d(tic) {
-    let {x, y, r, j, a, w, s, D,G, L,R,T,B} = this;
+    let {P,K,l, x, y, r, j, a, h, w, s, D,G, L,R,T,B} = this;
+
+    if (K=='D') { // It is dead.
+      if (h<.01) return;
+      style(...(C.at ? C : [C]));
+      ctx.fiRt(L-camera.x, T-camera.y, R-L, B-T);
+      return ctx.stRt(L-camera.x, T-camera.y, R-L, B-T);
+    }
+    if (!P && l<MAX_NPC_LIFE) {
+      ctx.fillStyle = '#C00';
+      ctx.fiRt(x-MAX_NPC_LIFE/2-camera.x, T-camera.y-1, MAX_NPC_LIFE, .5);
+      ctx.fillStyle = '#262';
+      ctx.fiRt(x-MAX_NPC_LIFE/2-camera.x, T-camera.y-1, l, .5);
+    }
 
     if (curChapterNum < 99) {
       if (j==1 && abs(a)<limJumpAngle) a -= r*.03;

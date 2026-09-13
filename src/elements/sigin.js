@@ -14,7 +14,7 @@ const ClassSign = (x,y,text,z=1)=> {
       ctx.font = `bold ${unt}px sans-serif`;
       let w = max(...lines.map((line, i)=> ctx.measureText(line).width / unt + z));
       ctx.sae();
-      ctx.tre(x-camera.x,y-camera.y);
+      ctx.tre(x-camera.x,this.B-camera.y);
       ctx.rotate(.2);
       ctx.fiRt(-.3, -2, .6, 2.2);
       ctx.stRt(-.3, -2, .6, 2.2);

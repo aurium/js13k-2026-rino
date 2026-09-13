@@ -36,6 +36,7 @@ let rino,
   rinoLife = 1,
   elements,
   curChapter,
+  chapter5_slabs,
   touchFloorSound = [
     [300, 200, .2, 1], [150, 100, .2, 1], [100, 80, .2, 1]
   ],
@@ -53,6 +54,11 @@ let rino,
  */
 self.onmessage = ({data: [event, payload]})=> {
   if (event == 'NC') { // New Chapter
+    log(`New Chapter Event: from:${curChapter} to:${payload.c}`)
+    if (!curChapter) { // It is a fresh start.
+      rinoLife=1;
+      setTimeout(addLife, 1000, 9);
+    }
     if (curChapter==99) { // It is a retry!
       setTimeout(addLife, 1000, 5);
     }
@@ -138,8 +144,8 @@ function dashEnded() {
 }
 
 function addLife(num) {
-  rinoLife = 1;
-  for (let i=5; i<4+num; i++) setTimeout(()=> rinoLife++, i*300);
+  if (rinoLife<10) rinoLife++;
+  if (num>1) setTimeout(addLife, 500, num-1);
 }
 
 function chapterInit(c) {
@@ -147,10 +153,15 @@ function chapterInit(c) {
   rino.vy = 0;
   rinoPawBackLanded = 0;
   rinoPawFrontLanded = 0;
+
   if (c==1) { // First Chapter
-    addLife(10);
     rinoDashEnergy = -1;
     dashEnabled = 0;
+  }
+
+  if (c==5) {
+    chapter5_slabs = elements.filter(el => el.vy);
+    log('Slabs', chapter5_slabs);
   }
 }
 
@@ -175,12 +186,10 @@ function rinoIsGrounded(someRino) {
   }
 }
 
-function testColisionFloor(o1, o2) {
-  for (const el of elements) {
-    if (o1.z == o2.z && (o2.K=='F' || o2.K=='O')) {
-      o1.R > o2.L && o1.L < el.R &&
-      o1.B >= o2.T && o1.B < o2.T+.7;
-    }
+function loseLife() {
+  if (rinoLife > 0) {
+    postMessage([ 'S', [[700, 100, .7, .4]] ]);
+    rinoLife--;
   }
 }
 
@@ -199,7 +208,14 @@ function loopInteration() {
   }
   /* * * END FPS * * * * * * * * * * * * * * * * * * */
 
-  if (tic%10==0 && rino.y > 40 && rinoLife > 0) rinoLife--;
+  if (curChapter==5) {
+    chapter5_slabs.map(s => {
+      s.T += s.vy;
+      s.B += s.vy;
+    });
+  }
+
+  if (tic%10==0 && rino.y > 40) loseLife();
 
   dashEnabled ||= !(curChapter==1 && (rino.x < 90));
   if (rinoDashEnergy==-1 && dashEnabled) rinoDashEnergy=150;
@@ -224,9 +240,9 @@ function loopInteration() {
   }
 
   /* * * BEGIN colision test and update status and positions * * */
-  for (let i=0; e1=elements[i]; i++) if (e1.K=='B' || e1.K=='O') {
+  for (let i=0; e1=elements[i]; i++) if (e1.K=='B' || e1.K=='D' || e1.K=='O') {
     /* * * BEGIN Update Positions * * */
-    if (e1.S=='R') { // It is a Rino!
+    if (e1.K=='B' && e1.S=='R') { // It is a Rino!
       if (!e1.D) {
         // Compute Jump
         if (e1.j==1) {
@@ -270,7 +286,14 @@ function loopInteration() {
         }
       }
     }
-    if (e1.K=='O') { // Update object positions
+    let e1IsObjectOrDead = e1.K=='O' || e1.K=='D';
+    if (e1.K=='D') { // Update dead beings
+      if (e1.h>0) {
+        e1.h -= .006;
+        e1.y += .003;
+      }
+    }
+    if (e1IsObjectOrDead) { // Update object (and dead) positions
       e1.vx *= .9;
       e1.x += e1.vx;
       e1.y += e1.vy;
@@ -281,7 +304,7 @@ function loopInteration() {
     }
     /* * * END Update Positions * * * */
     // Enforce gravity over objects:
-    if (e1.K=='O' && e1.vy<.5) e1.vy += .01;
+    if (e1IsObjectOrDead && e1.vy<.5) e1.vy += .01;
     // Test pair colisions
     for (let e2 of elements) {
       if (
@@ -292,10 +315,11 @@ function loopInteration() {
       ) {
         // Test dropping objects
         if (
-          e1.K=='O' && (e2.K=='F' || e2.K=='O') // Obj can be above Floor or Obj.
+          e1IsObjectOrDead && (e2.K=='F' || e2.K=='O') // Obj can be above Floor or Obj.
         ) {
           if (e1.B < (e2.T+.7)) { // It is not too low. Land it.
-            if (e1.vy>.01) postMessage(['S', touchFloorSound]);
+            // Only objects (not deads) emmits sound on touch floor.
+            if (e1.vy>.01 && e1.K=='O') postMessage(['S', touchFloorSound]);
             e1.vy = 0;
             e1.y = e2.T - e1.h/2;
           }
@@ -303,7 +327,8 @@ function loopInteration() {
         // Test for horizontal colizions
         if (
           (e1.K!='B' || e2.K!='B') && // Two Bio Being wont colide this way.
-          (e2.K=='W' || e2.K=='O' || e2.K=='B') && // Collidible types.
+          (e1.K=='B' || e1.K=='O') && // Only Alive and objects can colide horizontally
+          (e2.K=='W' || e2.K=='O' || e2.K=='B') && // Collidible block types.
           (min( abs(e1.B - e2.T), abs(e1.T - e2.B) ) > .6) // Not stacking one above other.
         ) {
           let inside = min(e2.R-e1.L, e1.R-e2.L);
@@ -312,6 +337,37 @@ function loopInteration() {
           if (e1.P && tic%3==0) postMessage(['S',
             [[350, 250, .2, e2.K=='W' ? .5 : .3]]
           ]);
+        }
+        if (
+          (e1.K=='B' && e2.K=='B') && // Two Bio Being colide horizontally
+          (e1.P) // The first one is the player
+        ) {
+          let vec = sign(e1.x - e2.x),
+              blodTic = tic%3;
+          if (e1.D) { // Player is Dashing, so it can damage and is invulnerable.
+            let hornL = e1.x + (e1.r>0 ? 6 : -8);
+            let hornR = e1.x + (e1.r>0 ? 8 : -6);
+            if (hornL < e2.R && hornR > e2.L) {
+              rinoDashEnergy -= 10;
+              if (rinoDashEnergy<0) rinoDashEnergy=0;
+              if (blodTic) e2.l--;
+              if (!e2.l) {
+                e2.K = 'D'; // Dead
+                e2.w = 12;
+                e2.h = 6;
+              }
+              e1.x += vec;
+              e2.x -= vec*2;
+            }
+          } else { // Player is vulnerable and can't damage.
+            let hornL = e2.x + (e2.r>0 ? 6 : -8);
+            let hornR = e2.x + (e2.r>0 ? 8 : -6);
+            if (hornL < e1.R && hornR > e1.L) {
+              if (blodTic) loseLife();
+              e1.x += vec/2;
+              e2.x -= vec/2;
+            }
+          }
         }
       }
     }
@@ -330,4 +386,3 @@ setInterval(loopInteration ,16);
 
 export const __rinoIsGrounded = rinoIsGrounded
 export const __loopInteration = loopInteration
-export const __testColisionFloor = testColisionFloor
