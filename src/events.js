@@ -21,7 +21,7 @@ worker.onmessage = ({data: [event, payload]})=> {
       cover.onclick = null;
       initGame();
     }
-    setTimeout(cover.onclick, 1); // AUTO START for DEV MODE!
+    //setTimeout(cover.onclick, 1); // AUTO START for DEV MODE!
   }
   if (event=='E') { // Update Elements
     if (payload.c == curChapterNum) {
